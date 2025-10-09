@@ -3,120 +3,199 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>South Fade - Owner Dashboard</title>
+<title>South Fade Dashboard</title>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
 <style>
 :root {
   --primary: #fcd535;
-  --bg: #0a0a0a;
-  --card: #1a1a1a;
-  --text: #fff;
-  --secondary: #b8b8b8;
+  --primary-dark: #e6c12f;
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #1a1a1a;
+  --bg-card: #2a2a2a;
+  --text-primary: #ffffff;
+  --text-secondary: #b8b8b8;
+  --accent: #ffdd35;
+  --glass: rgba(255, 255, 255, 0.1);
+  --border-glass: 1px solid rgba(255, 255, 255, 0.18);
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
+
 body {
-  font-family: "Inter", sans-serif;
-  background: var(--bg);
-  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
   margin: 0;
+  padding: 0;
 }
+
+/* Navbar */
 header {
-  background: var(--card);
+  background: rgba(10,10,10,0.9);
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: var(--border-glass);
+  backdrop-filter: blur(20px);
 }
-header img { height: 50px; }
+header img {
+  height: 50px;
+}
+header a {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* Dashboard Layout */
 main {
-  max-width: 1100px;
-  margin: 2rem auto;
+  max-width: 1200px;
+  margin: 3rem auto;
   padding: 1rem;
 }
-h1 { color: var(--primary); }
-.table-container {
-  background: var(--card);
-  border-radius: 12px;
-  overflow: hidden;
-  margin-top: 2rem;
+
+h1 {
+  color: var(--primary);
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
 }
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+/* Table */
+.table-container {
+  background: var(--glass);
+  border: var(--border-glass);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  backdrop-filter: blur(16px);
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
 }
+
 th, td {
   padding: 1rem;
-  text-align: left;
   border-bottom: 1px solid rgba(255,255,255,0.1);
+  text-align: left;
 }
-th { color: var(--secondary); text-transform: uppercase; font-size: 0.85rem; }
+
+th {
+  color: var(--primary);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
 .status {
-  padding: 0.4rem 0.8rem;
-  border-radius: 20px;
+  padding: 0.3rem 0.8rem;
+  border-radius: 8px;
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
+  background: rgba(255,255,255,0.1);
 }
-.status.Pending { background: rgba(245,158,11,.2); color: #f59e0b; }
-.status.Confirmed { background: rgba(16,185,129,.2); color: #10b981; }
-.status.Cancelled { background: rgba(239,68,68,.2); color: #ef4444; }
+.status.Pending { color: #fcd535; }
+.status.Confirmed { color: #10b981; }
+.status.Cancelled { color: #ef4444; }
+
+/* Chart */
 .chart-card {
-  background: var(--card);
-  border-radius: 12px;
+  background: var(--glass);
+  border: var(--border-glass);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
   padding: 1.5rem;
-  margin-top: 2rem;
+  text-align: center;
+  backdrop-filter: blur(16px);
 }
-canvas { max-height: 300px; }
+
+.chart-card h2 {
+  color: var(--primary);
+  margin-bottom: 1rem;
+}
+
+/* Toast */
 .toast {
   position: fixed;
-  bottom: 30px;
-  right: 30px;
-  background: rgba(255,255,255,0.1);
-  color: white;
-  border-radius: 8px;
+  top: 2rem;
+  right: 2rem;
+  background: var(--glass);
+  border: var(--border-glass);
+  border-radius: 12px;
+  backdrop-filter: blur(20px);
+  color: var(--text-primary);
   padding: 1rem 1.5rem;
   opacity: 0;
-  transition: 0.3s;
+  transform: translateX(400px);
+  transition: all 0.3s ease;
 }
-.toast.show { opacity: 1; }
+.toast.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Responsive */
+@media(max-width: 900px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
 </head>
 <body>
+
 <header>
-  <img src="./South-fade.png" alt="South Fade">
-  <h2>Owner Dashboard</h2>
+  <a href="https://south-fade.com">
+    <img src="./South-fade.png" alt="South Fade Logo">
+  </a>
+  <a href="https://south-fade.com">← Back to Home</a>
 </header>
 
 <main>
-  <h1>Recent Bookings</h1>
-  <div class="table-container">
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Service</th>
-          <th>Subservice</th>
-          <th>Date</th>
-          <th>Time</th>
-          <th>Status</th>
-        </tr>
-      </thead>
-      <tbody id="bookingsBody">
-        <tr><td colspan="6">Loading...</td></tr>
-      </tbody>
-    </table>
-  </div>
+  <h1>Bookings Dashboard</h1>
 
-  <div class="chart-card">
-    <h2>Most Booked Services</h2>
-    <canvas id="serviceChart"></canvas>
+  <div class="dashboard-grid">
+    <!-- Table -->
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Service</th>
+            <th>Subservice</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="bookingsBody">
+          <tr><td colspan="6">Loading bookings...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-card">
+      <h2>Most Booked Services</h2>
+      <canvas id="serviceChart"></canvas>
+    </div>
   </div>
 </main>
 
 <div class="toast" id="toast"></div>
 
 <script>
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwSXsrCsu9crkpHfBqcOAWAQNVtsJlKs3r0QZPDSrwwKfu7AsN2Pjjeee8NS68SyvdG/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw4DIGCxGzC7OAXg3-DezQEaF6QqmwCofE-8REldc95FmAPmY-3AN3pG2gm6JhGTg13/exec";
+let chart;
 
 function showToast(msg) {
   const t = document.getElementById("toast");
@@ -133,7 +212,7 @@ async function fetchBookings() {
     return json.data;
   } catch (err) {
     console.error(err);
-    showToast("Error loading bookings");
+    showToast("Failed to load data");
     return [];
   }
 }
@@ -144,7 +223,8 @@ function renderBookings(data) {
     tbody.innerHTML = `<tr><td colspan="6">No bookings found</td></tr>`;
     return;
   }
-  tbody.innerHTML = data.slice(0, 10).map(b => `
+
+  tbody.innerHTML = data.slice(-10).reverse().map(b => `
     <tr>
       <td>${b.Name || ""}</td>
       <td>${b.Service || ""}</td>
@@ -163,17 +243,27 @@ function renderChart(data) {
     const s = b.Service || "Unknown";
     serviceCount[s] = (serviceCount[s] || 0) + 1;
   });
-  new Chart(ctx, {
-    type: "doughnut",
+  const labels = Object.keys(serviceCount);
+  const values = Object.values(serviceCount);
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type: "bar",
     data: {
-      labels: Object.keys(serviceCount),
+      labels,
       datasets: [{
-        data: Object.values(serviceCount),
-        backgroundColor: ["#fcd535", "#10b981", "#3b82f6", "#ef4444", "#a855f7", "#f59e0b"],
+        label: "Bookings",
+        data: values,
+        backgroundColor: "rgba(252,213,53,0.7)",
+        borderColor: "#fcd535",
+        borderWidth: 2
       }]
     },
     options: {
-      plugins: { legend: { labels: { color: "#fff" } } },
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: "#fff" }, grid: { color: "rgba(255,255,255,0.1)" } },
+        y: { ticks: { color: "#fff" }, grid: { color: "rgba(255,255,255,0.1)" } }
+      }
     }
   });
 }
@@ -182,9 +272,15 @@ async function initDashboard() {
   const data = await fetchBookings();
   renderBookings(data);
   renderChart(data);
+  showToast("Dashboard updated at " + new Date().toLocaleTimeString());
 }
 
+// initialize on load
 document.addEventListener("DOMContentLoaded", initDashboard);
+
+// auto-refresh every 20 minutes
+setInterval(initDashboard, 1200000);
 </script>
+
 </body>
 </html>
