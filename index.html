@@ -6,18 +6,13 @@
   <title>South Fade Admin Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
-    /* === RESET & BASE === */
     * { box-sizing: border-box; margin:0; padding:0; }
-    html,body { height:100%; }
     body {
       font-family: "Helvetica Neue", Arial, sans-serif;
       background:#0a0a0a; color:#f0f0f0; line-height:1.6;
       -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
       overflow-x:hidden;
     }
-    a{ color:#3498db; text-decoration:none; } a:hover{ text-decoration:underline; }
-
-    /* === HEADER === */
     header{
       display:flex; align-items:center; justify-content:space-between; gap:16px;
       background:linear-gradient(135deg,#000,#1a1a1a); padding:18px 22px;
@@ -25,39 +20,21 @@
       color:#FFD700; position:sticky; top:0; z-index:50;
     }
     .brand{ display:flex; gap:12px; align-items:center; }
-    .brand h1{ font-size:1.2rem; font-weight:800; letter-spacing:0.3px; }
-    .brand p{ font-size:0.85rem; color:#ccc; margin-top:2px; }
+    .brand h1{ font-size:1.2rem; font-weight:800; }
+    .brand p{ font-size:0.85rem; color:#ccc; }
 
-    .header-actions{ display:flex; gap:10px; align-items:center; }
-
-    .btn{
-      padding:10px 14px; border-radius:8px; border:none; cursor:pointer; font-weight:700;
-      text-transform:uppercase; letter-spacing:0.4px;
-    }
+    .btn{ padding:10px 14px; border-radius:8px; border:none; cursor:pointer; font-weight:700; }
     .btn-primary{ background:#FFD700; color:#000; }
     .btn-primary:hover{ background:#e6c200; transform:translateY(-2px); }
-    .btn-ghost{ background:transparent; border:1px solid rgba(255,255,255,0.06); color:#fff; padding:8px 12px; border-radius:8px; }
 
-    /* === LAYOUT === */
     .container{ max-width:1400px; margin:26px auto; padding:0 20px 80px; }
 
-    /* === STATS === */
     .stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; margin-bottom:22px; }
     .stat{ background:#121212; padding:18px; border-radius:10px; border-left:4px solid #FFD700; box-shadow:0 4px 12px rgba(0,0,0,0.35); }
     .stat h3{ color:#bbb; font-size:0.80rem; text-transform:uppercase; margin-bottom:8px; }
     .stat .num{ font-size:2.1rem; color:#FFD700; font-weight:800; margin-bottom:6px; }
     .stat .lbl{ color:#888; font-size:0.9rem; }
 
-    /* === FILTERS === */
-    .filters{ background:#121212; padding:18px; border-radius:10px; border:1px solid #222; box-shadow:0 4px 12px rgba(0,0,0,0.35); margin-bottom:22px; }
-    .filters h2{ color:#FFD700; font-size:1.05rem; margin-bottom:12px; }
-    .filter-row{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:12px; }
-    .filter-group label{ color:#FFD700; font-weight:700; font-size:0.78rem; text-transform:uppercase; margin-bottom:6px; display:block; }
-    .filter-group input, .filter-group select{ width:100%; padding:10px; border-radius:8px; background:#1a1a1a; border:1px solid #333; color:#fff; }
-
-    .filter-actions{ display:flex; gap:8px; flex-wrap:wrap; }
-
-    /* === TABLE === */
     .table-box{ background:#121212; border-radius:10px; overflow:hidden; border:1px solid #222; box-shadow:0 4px 12px rgba(0,0,0,0.35); }
     .table-header{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:16px 18px; background:#161616; border-bottom:1px solid #222; flex-wrap:wrap; }
     .table-header h2{ color:#FFD700; font-size:1.05rem; font-weight:700; }
@@ -65,125 +42,70 @@
     .search input{ width:100%; padding:10px 40px 10px 14px; border-radius:25px; border:1px solid #333; background:#1a1a1a; color:#fff; }
     .search i{ position:absolute; right:12px; top:50%; transform:translateY(-50%); color:#777; }
 
-    .table-scroll{ overflow-x:auto; width:100%; -webkit-overflow-scrolling:touch; }
-    table{ width:100%; min-width:920px; border-collapse:collapse; }
-    th, td{ padding:12px 14px; border-bottom:1px solid #222; text-align:left; vertical-align:top; }
-    th{ background:#1a1a1a; color:#FFD700; font-size:0.78rem; text-transform:uppercase; white-space:nowrap; }
+    .table-scroll{ overflow-x:auto; width:100%; }
+    table{ width:100%; min-width:900px; border-collapse:collapse; }
+    th, td{ padding:12px 14px; border-bottom:1px solid #222; text-align:left; }
+    th{ background:#1a1a1a; color:#FFD700; font-size:0.78rem; text-transform:uppercase; }
     td{ color:#ddd; font-size:0.95rem; }
 
     .actions{ display:flex; gap:8px; }
     .btn-view{ background:#3498db; color:#fff; padding:6px 12px; border-radius:6px; border:none; cursor:pointer; font-weight:700; }
     .btn-view:hover{ background:#2980b9; }
 
-    /* === BADGES === */
     .badge{ display:inline-block; padding:5px 10px; border-radius:18px; font-weight:700; text-transform:uppercase; font-size:0.78rem; }
     .badge-confirmed{ background:rgba(40,167,69,0.12); color:#56d678; border:1px solid #2b7a44; }
     .badge-cancelled{ background:rgba(220,53,69,0.12); color:#ff6b7f; border:1px solid #8a2a33; }
     .badge-pending{ background:rgba(255,215,0,0.08); color:#FFD700; border:1px solid #aa9000; }
 
-    /* === LOADING / NO DATA === */
     .loading, .no-data{ text-align:center; padding:36px; color:#888; }
     .spinner{ border:3px solid rgba(255,215,0,0.18); border-top:3px solid #FFD700; border-radius:50%; width:30px; height:30px; animation:spin 1s linear infinite; margin:10px auto 12px; }
     @keyframes spin{ 0%{transform:rotate(0)}100%{transform:rotate(360deg)} }
 
-    /* === MODAL (view + add) === */
     .modal{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:1000; align-items:center; justify-content:center; padding:18px; }
     .modal.active{ display:flex; }
     .modal-content{ background:#121212; width:100%; max-width:640px; border-radius:12px; padding:18px; border:1px solid #333; max-height:92vh; overflow-y:auto; }
     .modal-header{ display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #222; padding-bottom:10px; margin-bottom:12px; }
-    .modal-header h3{ color:#FFD700; font-size:1.05rem; }
+    .modal-header h3{ color:#FFD700; }
     .modal-close{ background:transparent; border:none; color:#888; font-size:1.6rem; cursor:pointer; }
-    .form-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-bottom:12px; }
-    .form-field label{ display:block; font-size:0.78rem; color:#FFD700; margin-bottom:6px; font-weight:700; text-transform:uppercase; }
-    .form-field input, .form-field select, .form-field textarea{ width:100%; padding:10px; border-radius:8px; background:#1a1a1a; border:1px solid #333; color:#fff; }
-    .form-field textarea{ min-height:90px; resize:vertical; }
-    .modal-footer{ display:flex; justify-content:flex-end; gap:10px; margin-top:8px; flex-wrap:wrap; }
-    .muted{ color:#999; font-size:0.9rem; }
-
-    /* small */
-    @media (max-width:768px){
-      .container{ padding:0 14px 60px; }
-      header{ padding:14px 16px; }
-      .table-scroll table{ min-width:700px; }
-      .form-grid{ grid-template-columns:1fr 1fr; }
-    }
-    @media (max-width:480px){
-      .form-grid{ grid-template-columns:1fr; }
-      .brand p{ display:none; }
-    }
   </style>
 </head>
 <body>
   <header>
     <div class="brand">
       <h1><i class="fas fa-cut"></i> South Fade Admin</h1>
-      <p>Manage bookings & appointments</p>
+      <p>Today's Appointments</p>
     </div>
-
     <div class="header-actions">
-      <button id="openAddBtn" class="btn btn-primary" title="Add booking"><i class="fas fa-plus"></i> Add Booking</button>
+      <button id="openAddBtn" class="btn btn-primary"><i class="fas fa-plus"></i> Add Booking</button>
     </div>
   </header>
 
   <main class="container">
-    <!-- Stats -->
-    <section class="stats" aria-label="Summary statistics">
-      <div class="stat"><h3>Today's Bookings</h3><div class="num" id="todayCount">0</div><div class="lbl">Appointments scheduled</div></div>
-      <div class="stat"><h3>This Week</h3><div class="num" id="weekCount">0</div><div class="lbl">Total bookings</div></div>
-      <div class="stat"><h3>This Month</h3><div class="num" id="monthCount">0</div><div class="lbl">Total bookings</div></div>
-      <div class="stat"><h3>Total Revenue</h3><div class="num" id="revenue">£0.00</div><div class="lbl">This month</div></div>
+    <section class="stats">
+      <div class="stat"><h3>Today's Bookings</h3><div class="num" id="todayCount">0</div><div class="lbl">Appointments today</div></div>
+      <div class="stat"><h3>Total Revenue</h3><div class="num" id="revenue">£0.00</div><div class="lbl">Confirmed only</div></div>
     </section>
 
-    <!-- Filters -->
-    <section class="filters" aria-label="Filters">
-      <h2><i class="fas fa-filter"></i> Filters</h2>
-      <div class="filter-row">
-        <div class="filter-group"><label>Start Date</label><input type="date" id="startDate"></div>
-        <div class="filter-group"><label>End Date</label><input type="date" id="endDate"></div>
-        <div class="filter-group">
-          <label>Status</label>
-          <select id="statusFilter">
-            <option value="">All Statuses</option>
-            <option value="Confirmed">Confirmed</option>
-            <option value="Cancelled">Cancelled</option>
-            <option value="Pending">Pending</option>
-          </select>
-        </div>
-      </div>
-      <div class="filter-actions">
-        <button class="btn btn-primary" onclick="applyFilters()"><i class="fas fa-search"></i> Apply</button>
-        <button class="btn btn-ghost" onclick="resetFilters()"><i class="fas fa-redo"></i> Reset</button>
-      </div>
-    </section>
-
-    <!-- Table -->
-    <section class="table-box" aria-label="Bookings table">
+    <section class="table-box">
       <div class="table-header">
-        <h2><i class="fas fa-calendar-alt"></i> All Bookings</h2>
+        <h2><i class="fas fa-calendar-alt"></i> Today’s Bookings</h2>
         <div class="search">
-          <input id="searchBox" type="text" placeholder="Search by name, email, phone..." oninput="searchBookings()" />
+          <input id="searchBox" type="text" placeholder="Search name, email..." oninput="searchBookings()" />
           <i class="fas fa-search"></i>
         </div>
       </div>
 
       <div id="loading" class="loading">
-        <div class="spinner" role="status" aria-hidden="true"></div>
+        <div class="spinner"></div>
         <p>Loading bookings…</p>
       </div>
 
       <div id="tableContainer" style="display:none">
-        <div class="table-scroll" aria-live="polite">
-          <table role="table" aria-label="Bookings data">
+        <div class="table-scroll">
+          <table>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Customer</th>
-                <th>Contact</th>
-                <th>Date & Time</th>
-                <th>Service</th>
-                <th>Price</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th>ID</th><th>Customer</th><th>Contact</th><th>Time</th><th>Service</th><th>Price</th><th>Status</th><th>Actions</th>
               </tr>
             </thead>
             <tbody id="tableBody"></tbody>
@@ -193,120 +115,45 @@
 
       <div id="noData" class="no-data" style="display:none">
         <i class="fas fa-inbox" style="font-size:3rem;margin-bottom:8px;"></i>
-        <p>No bookings found</p>
+        <p>No bookings for today</p>
       </div>
     </section>
   </main>
 
   <!-- View Modal -->
-  <div id="modal" class="modal" aria-hidden="true">
-    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div id="modal" class="modal">
+    <div class="modal-content">
       <div class="modal-header">
-        <h3 id="modalTitle"><i class="fas fa-info-circle"></i> Booking Details</h3>
-        <button class="modal-close" onclick="closeModal()" aria-label="Close">&times;</button>
+        <h3><i class="fas fa-info-circle"></i> Booking Details</h3>
+        <button class="modal-close" onclick="closeModal()">&times;</button>
       </div>
       <div id="modalBody" style="color:#ddd"></div>
     </div>
   </div>
 
-  <!-- Add Booking Modal -->
-  <div id="addModal" class="modal" aria-hidden="true">
-    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="addModalTitle">
-      <div class="modal-header">
-        <h3 id="addModalTitle"><i class="fas fa-plus-circle"></i> Add Booking</h3>
-        <button class="modal-close" onclick="closeAddModal()" aria-label="Close">&times;</button>
-      </div>
-
-      <form id="addForm" onsubmit="submitAddForm(event)">
-        <div class="form-grid">
-          <div class="form-field">
-            <label>Name</label>
-            <input id="ab_name" type="text" required placeholder="Customer name" />
-          </div>
-          <div class="form-field">
-            <label>Email</label>
-            <input id="ab_email" type="email" required placeholder="customer@example.com" />
-          </div>
-          <div class="form-field">
-            <label>Phone</label>
-            <input id="ab_phone" type="tel" placeholder="07123 456789" />
-          </div>
-          <div class="form-field">
-            <label>Date</label>
-            <input id="ab_date" type="date" required />
-          </div>
-          <div class="form-field">
-            <label>Time</label>
-            <input id="ab_time" type="time" required />
-          </div>
-          <div class="form-field">
-            <label>Service</label>
-            <input id="ab_service" type="text" placeholder="e.g. Skin Fade + Beard" required />
-          </div>
-          <div class="form-field">
-            <label>Price</label>
-            <input id="ab_price" type="number" min="0" step="0.01" placeholder="25.00" required />
-          </div>
-          <div class="form-field">
-            <label>Notes</label>
-            <textarea id="ab_notes" placeholder="Optional notes"></textarea>
-          </div>
-        </div>
-
-        <div class="modal-footer">
-          <div class="muted" id="addFormMsg" style="align-self:center"></div>
-          <button type="button" class="btn btn-ghost" onclick="closeAddModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="addSubmitBtn"><i class="fas fa-check"></i> Save Booking</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
   <script>
-    // ========== CONFIG ==========
     const SHEET_ID = '10mWbLLbm4eEJktFEm2Pk3IW09lP0vHiUp5BmpWW44BA';
     const SHEET_NAME = 'Bookings';
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzhZNRIOPimun3NF-9ZTiSF7QHNISm1dczpIEHx6rg2eyElL7FKBLd1mxOHQ34exVM/exec';
-    const SHEETS_FETCH_PROXY = 'https://corsproxy.io/?'; // used for reads
+    const SHEETS_FETCH_PROXY = 'https://corsproxy.io/?';
 
     let allBookings = [], filteredBookings = [];
 
-    // ========== INIT ==========
     document.addEventListener('DOMContentLoaded', () => {
-      setDefaultDates();
       loadBookings();
-      attachUI();
+      document.getElementById('openAddBtn').addEventListener('click', () => quickToast('Adding via Sheet only (disabled here).'));
     });
 
-    function attachUI() {
-      document.getElementById('openAddBtn').addEventListener('click', openAddModal);
-      window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') { closeModal(); closeAddModal(); }
-      });
-    }
-
-    function setDefaultDates() {
-      const today = new Date();
-      const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-      const lastDay = new Date(today.getFullYear(), today.getMonth()+1, 0);
-      document.getElementById('startDate').value = firstDay.toISOString().split('T')[0];
-      document.getElementById('endDate').value = lastDay.toISOString().split('T')[0];
-    }
-
-    // ========== LOAD BOOKINGS ==========
     async function loadBookings() {
-      const loadingEl = document.getElementById('loading');
-      loadingEl.style.display = 'block';
+      document.getElementById('loading').style.display = 'block';
       document.getElementById('tableContainer').style.display = 'none';
       document.getElementById('noData').style.display = 'none';
 
       try {
         const url = `${SHEETS_FETCH_PROXY}https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
         const res = await fetch(url);
-        if (!res.ok) throw new Error('HTTP ' + res.status);
         const text = await res.text();
         const json = JSON.parse(text.substr(47).slice(0, -2));
-        const rows = (json.table && json.table.rows) ? json.table.rows : [];
+        const rows = json.table?.rows || [];
 
         allBookings = rows.map(r => {
           const c = r.c || [];
@@ -314,309 +161,132 @@
             id: c[0]?.v || '',
             name: c[1]?.v || '',
             email: c[2]?.v || '',
-            phone: formatPhone(c[3]?.v || ''),
-            date: extractDate(c[4]),
-            time: extractTime(c[5]),
+            phone: c[3]?.v || '',
+            date: formatSheetDate(c[4]),
+            time: c[5]?.v || '',
             service: c[6]?.v || '',
             price: formatPrice(c[7]),
-            notes: c[8]?.v || '',
-            status: c[9]?.v || 'Confirmed',
-            created: formatCreated(c[10])
+            status: c[9]?.v || 'Confirmed'
           };
         });
-
-        filteredBookings = [...allBookings];
+        
+        const today = getLocalDate();
+        filteredBookings = allBookings.filter(b => b.date === today);
         updateStats();
         displayBookings();
       } catch (err) {
-        console.error('Load error:', err);
-        showNoData('Failed to load bookings. Check sheet permissions or network.');
+        console.error('Load error', err);
+        showNoData('Could not load sheet data.');
       }
     }
 
-    function extractDate(cell) {
-      if (!cell) return '';
-      if (typeof cell.v === 'string') return cell.v;
-      if (cell.f) return cell.f;
-      if (cell.v) {
-        try { const d = new Date(cell.v); if (!isNaN(d)) return d.toISOString().split('T')[0]; } catch(e){}
-      }
-      return '';
-    }
-    function extractTime(cell) {
-      if (!cell) return '';
-      if (cell.v && typeof cell.v === 'string' && cell.v.indexOf(':') !== -1) return cell.v;
-      if (cell.f) return cell.f;
-      return '';
-    }
-    function formatPrice(cell) {
-      if (!cell) return '£0.00';
-      if (cell.f) return cell.f;
-      if (cell.v != null && !isNaN(parseFloat(cell.v))) return '£' + parseFloat(cell.v).toFixed(2);
-      return String(cell.v || cell || '£0.00');
-    }
-    function formatCreated(cell) {
+    function formatSheetDate(cell) {
       if (!cell) return '';
       if (cell.f) return cell.f;
-      if (cell.v) {
+      if (typeof cell.v === 'string') return cell.v.split('T')[0];
+      try {
         const d = new Date(cell.v);
-        if (!isNaN(d)) return d.toLocaleString('en-GB');
-      }
-      return '';
-    }
-    function formatPhone(p) {
-      if (!p) return '';
-      let s = String(p).replace(/[^\d+]/g,'');
-      if (s.length === 11 && s[0] === '0') return s.replace(/(\d{5})(\d{6})/,'$1 $2');
-      return s;
+        return d.toLocaleDateString('en-CA'); // yyyy-mm-dd
+      } catch { return ''; }
     }
 
-    // ========== DISPLAY ==========
+    function getLocalDate() {
+      const now = new Date();
+      return now.toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
+    }
+
+    function formatPrice(cell) {
+      const v = cell?.v || cell || '';
+      const num = parseFloat(v);
+      return isNaN(num) ? '£0.00' : `£${num.toFixed(2)}`;
+    }
+
     function displayBookings() {
       const tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
       document.getElementById('loading').style.display = 'none';
 
       if (!filteredBookings.length) {
-        document.getElementById('tableContainer').style.display = 'none';
         document.getElementById('noData').style.display = 'block';
         return;
       }
+document.getElementById('tableContainer').style.display = 'block';
 
-      document.getElementById('tableContainer').style.display = 'block';
-      document.getElementById('noData').style.display = 'none';
-
-      const sorted = filteredBookings.slice().sort((a,b) => {
-        const da = new Date((a.date || '') + 'T' + (a.time || '00:00'));
-        const db = new Date((b.date || '') + 'T' + (b.time || '00:00'));
-        return db - da;
-      });
-
-      sorted.forEach((b, idx) => {
+      filteredBookings.forEach((b, i) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td><strong>${escapeHtml(b.id)}</strong></td>
-          <td>${escapeHtml(b.name)}</td>
-          <td>
-            <div>${escapeHtml(b.email)}</div>
-            <div style="font-size:0.85rem;color:#999">${escapeHtml(b.phone)}</div>
-          </td>
-          <td>${formatDisplayDate(b.date)}<br><span style="color:#aaa;font-size:0.9rem">${escapeHtml(b.time)}</span></td>
-          <td>${escapeHtml(b.service)}</td>
-          <td><strong>${escapeHtml(b.price)}</strong></td>
+          <td>${b.id}</td>
+          <td>${b.name}</td>
+          <td><div>${b.email}</div><div style="font-size:0.85rem;color:#999">${b.phone}</div></td>
+          <td>${b.time}</td>
+          <td>${b.service}</td>
+          <td><strong>${b.price}</strong></td>
           <td>${statusBadge(b.status)}</td>
-          <td>
-            <div class="actions">
-              <button class="btn-view" onclick="openModal(${idx})"><i class="fas fa-eye"></i> View</button>
-            </div>
-          </td>
+          <td><button class="btn-view" onclick="openModal(${i})"><i class="fas fa-eye"></i> View</button></td>
         `;
         tbody.appendChild(tr);
       });
-    }
-
-    function formatDisplayDate(dstr) {
-      if (!dstr) return '';
-      const d = new Date(dstr);
-      if (!isNaN(d)) return d.toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
-      return dstr;
     }
 
     function statusBadge(st) {
       const s = (st||'').toLowerCase();
       if (s === 'confirmed') return `<span class="badge badge-confirmed">Confirmed</span>`;
       if (s === 'cancelled') return `<span class="badge badge-cancelled">Cancelled</span>`;
-      return `<span class="badge badge-pending">${escapeHtml(st || 'Pending')}</span>`;
+      return `<span class="badge badge-pending">${st}</span>`;
     }
 
-    // ========== FILTERS / SEARCH ==========
-    function applyFilters() {
-      const start = document.getElementById('startDate').value;
-      const end = document.getElementById('endDate').value;
-      const status = document.getElementById('statusFilter').value;
-
-      filteredBookings = allBookings.filter(b => {
-        const d = new Date(b.date);
-        const s = start ? new Date(start) : null;
-        const e = end ? new Date(end) : null;
-        const inRange = (!s || d >= s) && (!e || d <= e);
-        const matchStatus = !status || (b.status || '').toLowerCase() === status.toLowerCase();
-        return inRange && matchStatus;
-      });
-      displayBookings();
+    function openModal(i) {
+      const b = filteredBookings[i];
+      if (!b) return;
+      document.getElementById('modalBody').innerHTML = `
+        <p><strong>Name:</strong> ${b.name}</p>
+        <p><strong>Email:</strong> ${b.email}</p>
+        <p><strong>Phone:</strong> ${b.phone}</p>
+        <p><strong>Date:</strong> ${b.date}</p>
+        <p><strong>Time:</strong> ${b.time}</p>
+        <p><strong>Service:</strong> ${b.service}</p>
+        <p><strong>Price:</strong> ${b.price}</p>
+        <p><strong>Status:</strong> ${statusBadge(b.status)}</p>
+      `;
+      document.getElementById('modal').classList.add('active');
     }
-
-    function resetFilters() {
-      document.getElementById('startDate').value = '';
-      document.getElementById('endDate').value = '';
-      document.getElementById('statusFilter').value = '';
-      filteredBookings = [...allBookings];
-      displayBookings();
-    }
+    function closeModal(){ document.getElementById('modal').classList.remove('active'); }
 
     function searchBookings() {
-      const q = document.getElementById('searchBox').value.trim().toLowerCase();
-      if (!q) { filteredBookings = [...allBookings]; displayBookings(); return; }
-      filteredBookings = allBookings.filter(b => {
-        return (
-          (b.name && b.name.toLowerCase().includes(q)) ||
-          (b.email && b.email.toLowerCase().includes(q)) ||
-          (b.phone && b.phone.toLowerCase().includes(q)) ||
-          (b.id && b.id.toLowerCase().includes(q)) ||
-          (b.service && b.service.toLowerCase().includes(q))
-        );
-      });
+      const q = document.getElementById('searchBox').value.toLowerCase();
+      const today = getLocalDate();
+      filteredBookings = allBookings.filter(b =>
+        b.date === today && (
+          b.name?.toLowerCase().includes(q) ||
+          b.email?.toLowerCase().includes(q) ||
+          b.phone?.toLowerCase().includes(q)
+        )
+      );
       displayBookings();
     }
 
-    // ========== VIEW Modal ==========
-    function openModal(index) {
-      const b = filteredBookings[index];
-      if (!b) return;
-      const modal = document.getElementById('modal');
-      const body = document.getElementById('modalBody');
-      body.innerHTML = `
-        <div class="detail-item"><div class="detail-label">Booking ID</div><div class="detail-value">${escapeHtml(b.id)}</div></div>
-        <div class="detail-item"><div class="detail-label">Customer</div><div class="detail-value">${escapeHtml(b.name)}</div></div>
-        <div class="detail-item"><div class="detail-label">Email</div><div class="detail-value"><a href="mailto:${escapeHtml(b.email)}">${escapeHtml(b.email)}</a></div></div>
-        <div class="detail-item"><div class="detail-label">Phone</div><div class="detail-value"><a href="tel:${escapeHtml(b.phone)}">${escapeHtml(b.phone)}</a></div></div>
-        <div class="detail-item"><div class="detail-label">Date & Time</div><div class="detail-value">${formatDisplayDate(b.date)} at ${escapeHtml(b.time)}</div></div>
-        <div class="detail-item"><div class="detail-label">Service</div><div class="detail-value">${escapeHtml(b.service)}</div></div>
-        <div class="detail-item"><div class="detail-label">Price</div><div class="detail-value"><strong>${escapeHtml(b.price)}</strong></div></div>
-        <div class="detail-item"><div class="detail-label">Status</div><div class="detail-value">${statusBadge(b.status)}</div></div>
-        <div class="detail-item"><div class="detail-label">Notes</div><div class="detail-value">${escapeHtml(b.notes || '—')}</div></div>
-        <div class="detail-item"><div class="detail-label">Created</div><div class="detail-value">${escapeHtml(b.created || '—')}</div></div>
-      `;
-      modal.classList.add('active');
-      modal.setAttribute('aria-hidden','false');
-    }
-    function closeModal() {
-      const modal = document.getElementById('modal');
-      modal.classList.remove('active');
-      modal.setAttribute('aria-hidden','true');
-    }
-
-    // ========== ADD Booking Modal ==========
-    function openAddModal() {
-      document.getElementById('addFormMsg').innerText = '';
-      document.getElementById('addForm').reset();
-      document.getElementById('addModal').classList.add('active');
-      document.getElementById('addModal').setAttribute('aria-hidden','false');
-      // default to today
-      document.getElementById('ab_date').value = new Date().toISOString().split('T')[0];
-    }
-    function closeAddModal() {
-      document.getElementById('addModal').classList.remove('active');
-      document.getElementById('addModal').setAttribute('aria-hidden','true');
-    }
-
-    // ========== SUBMIT NEW BOOKING (no GS changes) ==========
-    async function submitAddForm(e) {
-      e.preventDefault();
-      const msgEl = document.getElementById('addFormMsg');
-      const submitBtn = document.getElementById('addSubmitBtn');
-      msgEl.innerText = '';
-
-      const payload = {
-        action: 'createBooking',
-        name: document.getElementById('ab_name').value.trim(),
-        email: document.getElementById('ab_email').value.trim(),
-        phone: document.getElementById('ab_phone').value.trim(),
-        date: document.getElementById('ab_date').value,
-        time: document.getElementById('ab_time').value,
-        service: document.getElementById('ab_service').value.trim(),
-        price: (document.getElementById('ab_price').value || '').toString(),
-        notes: document.getElementById('ab_notes').value.trim()
-      };
-
-      // validation
-      if (!payload.name || !payload.email || !payload.date || !payload.time || !payload.service) {
-        msgEl.innerText = 'Please fill required fields (name, email, date, time, service).';
-        return;
-      }
-
-      // show sending state
-      msgEl.innerText = 'Sending…';
-      submitBtn.disabled = true;
-
-      try {
-        // Use no-cors so we don't need to modify the Apps Script
-        await fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors', // important: sends the POST without CORS preflight
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-
-        // Because of no-cors we cannot read response. Assume success and refresh bookings.
-        msgEl.innerText = 'Booking submitted — refreshing...';
-        quickToast('Booking submitted. Refreshing list...');
-        setTimeout(() => {
-          closeAddModal();
-          loadBookings();
-        }, 900);
-      } catch (err) {
-        console.error('Add booking error', err);
-        msgEl.innerText = 'Failed to create booking: ' + (err.message || err);
-      } finally {
-        submitBtn.disabled = false;
-      }
-    }
-
-    // ========== TOAST ==========
-    function quickToast(txt) {
-      const t = document.createElement('div');
-      t.innerText = txt;
-      t.style.position = 'fixed';
-      t.style.left = '50%';
-      t.style.transform = 'translateX(-50%)';
-      t.style.bottom = '22px';
-      t.style.background = '#222';
-      t.style.color = '#fff';
-      t.style.padding = '10px 14px';
-      t.style.borderRadius = '8px';
-      t.style.boxShadow = '0 6px 18px rgba(0,0,0,0.6)';
-      t.style.zIndex = 2000;
-      document.body.appendChild(t);
-      setTimeout(()=> t.style.opacity = '0.95', 50);
-      setTimeout(()=> t.style.opacity = '0', 3500);
-      setTimeout(()=> { try { document.body.removeChild(t); } catch(e){} }, 4100);
-    }
-
-    // ========== UTILITIES ==========
-    function escapeHtml(s) {
-      if (s === null || s === undefined) return '';
-      return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#39;');
-    }
-
-    // ========== STATS ==========
     function updateStats() {
-      const now = new Date();
-      const todayStr = now.toISOString().split('T')[0];
-      const startOfWeek = new Date(now); startOfWeek.setDate(now.getDate() - now.getDay());
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-      const todayCount = allBookings.filter(b => b.date === todayStr).length;
-      const weekCount = allBookings.filter(b => new Date(b.date) >= startOfWeek).length;
-      const monthCount = allBookings.filter(b => new Date(b.date) >= startOfMonth).length;
-      const revenue = allBookings.filter(b => (b.status || '').toLowerCase() === 'confirmed')
-        .reduce((sum, b) => sum + (parseFloat((b.price || '').replace(/[^\d.-]/g, '')) || 0), 0);
-
+      const todayCount = filteredBookings.length;
+      const revenue = filteredBookings.filter(b => b.status.toLowerCase() === 'confirmed')
+        .reduce((sum, b) => sum + (parseFloat(b.price.replace(/[^\d.-]/g, '')) || 0), 0);
       document.getElementById('todayCount').innerText = todayCount;
-      document.getElementById('weekCount').innerText = weekCount;
-      document.getElementById('monthCount').innerText = monthCount;
       document.getElementById('revenue').innerText = `£${revenue.toFixed(2)}`;
     }
 
     function showNoData(msg) {
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('tableContainer').style.display = 'none';
       const nd = document.getElementById('noData');
       nd.style.display = 'block';
-      nd.innerHTML = `<i class="fas fa-exclamation-circle" style="font-size:2.6rem;margin-bottom:12px;color:#e74c3c"></i><p style="color:#ddd">${escapeHtml(msg)}</p>`;
+      nd.innerHTML = `<i class="fas fa-exclamation-circle" style="font-size:2.6rem;color:#e74c3c"></i><p>${msg}</p>`;
     }
 
-    // refresh interval (30s)
+    function quickToast(txt) {
+      const t=document.createElement('div');
+      t.innerText=txt;
+      Object.assign(t.style,{position:'fixed',bottom:'22px',left:'50%',transform:'translateX(-50%)',background:'#222',color:'#fff',padding:'10px 14px',borderRadius:'8px',zIndex:2000});
+      document.body.appendChild(t);
+      setTimeout(()=>t.remove(),3000);
+    }
+
     setInterval(loadBookings, 30000);
   </script>
 </body>
