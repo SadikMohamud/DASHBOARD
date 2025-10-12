@@ -6,56 +6,53 @@
   <title>South Fade Admin Dashboard</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
-    * { box-sizing: border-box; margin:0; padding:0; }
+    * { margin:0; padding:0; box-sizing:border-box; }
     body {
-      font-family: "Helvetica Neue", Arial, sans-serif;
-      background:#0a0a0a; color:#f0f0f0; line-height:1.6;
+      font-family:"Helvetica Neue",Arial,sans-serif;
+      background:#0a0a0a; color:#f0f0f0;
       -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-      overflow-x:hidden;
     }
-    header{
-      display:flex; align-items:center; justify-content:space-between; gap:16px;
-      background:linear-gradient(135deg,#000,#1a1a1a); padding:18px 22px;
-      border-bottom:1px solid #222; box-shadow:0 4px 15px rgba(0,0,0,0.5);
-      color:#FFD700; position:sticky; top:0; z-index:50;
+    header {
+      display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;
+      background:linear-gradient(135deg,#000,#1a1a1a);
+      color:#FFD700; padding:18px 22px; border-bottom:1px solid #222;
+      box-shadow:0 4px 15px rgba(0,0,0,0.5);
+      position:sticky; top:0; z-index:50;
     }
-    .brand{ display:flex; gap:12px; align-items:center; }
+    .brand{ display:flex; gap:10px; align-items:center; }
     .brand h1{ font-size:1.2rem; font-weight:800; }
-    .brand p{ font-size:0.85rem; color:#ccc; }
-
-    .btn{ padding:10px 14px; border-radius:8px; border:none; cursor:pointer; font-weight:700; }
+    .brand p{ font-size:0.85rem; color:#aaa; }
+    .btn{ padding:10px 14px; border:none; border-radius:8px; cursor:pointer; font-weight:700; }
     .btn-primary{ background:#FFD700; color:#000; }
     .btn-primary:hover{ background:#e6c200; transform:translateY(-2px); }
-
     .container{ max-width:1400px; margin:26px auto; padding:0 20px 80px; }
 
     .stats{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; margin-bottom:22px; }
     .stat{ background:#121212; padding:18px; border-radius:10px; border-left:4px solid #FFD700; box-shadow:0 4px 12px rgba(0,0,0,0.35); }
-    .stat h3{ color:#bbb; font-size:0.80rem; text-transform:uppercase; margin-bottom:8px; }
-    .stat .num{ font-size:2.1rem; color:#FFD700; font-weight:800; margin-bottom:6px; }
+    .stat h3{ color:#bbb; font-size:0.8rem; text-transform:uppercase; margin-bottom:8px; }
+    .stat .num{ font-size:2.1rem; color:#FFD700; font-weight:800; }
     .stat .lbl{ color:#888; font-size:0.9rem; }
 
     .table-box{ background:#121212; border-radius:10px; overflow:hidden; border:1px solid #222; box-shadow:0 4px 12px rgba(0,0,0,0.35); }
     .table-header{ display:flex; justify-content:space-between; align-items:center; gap:10px; padding:16px 18px; background:#161616; border-bottom:1px solid #222; flex-wrap:wrap; }
-    .table-header h2{ color:#FFD700; font-size:1.05rem; font-weight:700; }
+    .table-header h2{ color:#FFD700; font-size:1rem; font-weight:700; }
     .search{ position:relative; width:100%; max-width:320px; }
     .search input{ width:100%; padding:10px 40px 10px 14px; border-radius:25px; border:1px solid #333; background:#1a1a1a; color:#fff; }
     .search i{ position:absolute; right:12px; top:50%; transform:translateY(-50%); color:#777; }
 
-    .table-scroll{ overflow-x:auto; width:100%; }
-    table{ width:100%; min-width:900px; border-collapse:collapse; }
+    .table-scroll{ overflow-x:auto; }
+    table{ width:100%; border-collapse:collapse; min-width:900px; }
     th, td{ padding:12px 14px; border-bottom:1px solid #222; text-align:left; }
     th{ background:#1a1a1a; color:#FFD700; font-size:0.78rem; text-transform:uppercase; }
     td{ color:#ddd; font-size:0.95rem; }
-
-    .actions{ display:flex; gap:8px; }
-    .btn-view{ background:#3498db; color:#fff; padding:6px 12px; border-radius:6px; border:none; cursor:pointer; font-weight:700; }
-    .btn-view:hover{ background:#2980b9; }
 
     .badge{ display:inline-block; padding:5px 10px; border-radius:18px; font-weight:700; text-transform:uppercase; font-size:0.78rem; }
     .badge-confirmed{ background:rgba(40,167,69,0.12); color:#56d678; border:1px solid #2b7a44; }
     .badge-cancelled{ background:rgba(220,53,69,0.12); color:#ff6b7f; border:1px solid #8a2a33; }
     .badge-pending{ background:rgba(255,215,0,0.08); color:#FFD700; border:1px solid #aa9000; }
+
+    .btn-view{ background:#3498db; color:#fff; padding:6px 12px; border-radius:6px; border:none; cursor:pointer; font-weight:700; }
+    .btn-view:hover{ background:#2980b9; }
 
     .loading, .no-data{ text-align:center; padding:36px; color:#888; }
     .spinner{ border:3px solid rgba(255,215,0,0.18); border-top:3px solid #FFD700; border-radius:50%; width:30px; height:30px; animation:spin 1s linear infinite; margin:10px auto 12px; }
@@ -66,7 +63,7 @@
     .modal-content{ background:#121212; width:100%; max-width:640px; border-radius:12px; padding:18px; border:1px solid #333; max-height:92vh; overflow-y:auto; }
     .modal-header{ display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #222; padding-bottom:10px; margin-bottom:12px; }
     .modal-header h3{ color:#FFD700; }
-    .modal-close{ background:transparent; border:none; color:#888; font-size:1.6rem; cursor:pointer; }
+    .modal-close{ background:none; border:none; color:#888; font-size:1.6rem; cursor:pointer; }
   </style>
 </head>
 <body>
@@ -75,20 +72,18 @@
       <h1><i class="fas fa-cut"></i> South Fade Admin</h1>
       <p>Today's Appointments</p>
     </div>
-    <div class="header-actions">
-      <button id="openAddBtn" class="btn btn-primary"><i class="fas fa-plus"></i> Add Booking</button>
-    </div>
+    <button id="openAddBtn" class="btn btn-primary"><i class="fas fa-plus"></i> Add Booking</button>
   </header>
 
   <main class="container">
     <section class="stats">
-      <div class="stat"><h3>Today's Bookings</h3><div class="num" id="todayCount">0</div><div class="lbl">Appointments today</div></div>
+      <div class="stat"><h3>Today's Bookings</h3><div class="num" id="todayCount">0</div><div class="lbl">Appointments</div></div>
       <div class="stat"><h3>Total Revenue</h3><div class="num" id="revenue">£0.00</div><div class="lbl">Confirmed only</div></div>
     </section>
 
     <section class="table-box">
       <div class="table-header">
-        <h2><i class="fas fa-calendar-alt"></i> Today’s Bookings</h2>
+        <h2><i class="fas fa-calendar-alt"></i> Today's Bookings</h2>
         <div class="search">
           <input id="searchBox" type="text" placeholder="Search name, email..." oninput="searchBookings()" />
           <i class="fas fa-search"></i>
@@ -120,7 +115,6 @@
     </section>
   </main>
 
-  <!-- View Modal -->
   <div id="modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -134,85 +128,76 @@
   <script>
     const SHEET_ID = '10mWbLLbm4eEJktFEm2Pk3IW09lP0vHiUp5BmpWW44BA';
     const SHEET_NAME = 'Bookings';
-    const SHEETS_FETCH_PROXY = 'https://corsproxy.io/?';
-
-    let allBookings = [], filteredBookings = [];
+    const PROXY = 'https://corsproxy.io/?';
+    let allBookings = [], todayBookings = [];
 
     document.addEventListener('DOMContentLoaded', () => {
       loadBookings();
-      document.getElementById('openAddBtn').addEventListener('click', () => quickToast('Adding via Sheet only (disabled here).'));
+      document.getElementById('openAddBtn').addEventListener('click', () => alert('Add new bookings via Google Sheet.'));
     });
 
     async function loadBookings() {
-      document.getElementById('loading').style.display = 'block';
-      document.getElementById('tableContainer').style.display = 'none';
-      document.getElementById('noData').style.display = 'none';
-
+      showLoading(true);
       try {
-        const url = `${SHEETS_FETCH_PROXY}https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+        const url = `${PROXY}https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
         const res = await fetch(url);
         const text = await res.text();
-        const json = JSON.parse(text.substr(47).slice(0, -2));
-        const rows = json.table?.rows || [];
+        const data = JSON.parse(text.substr(47).slice(0, -2));
+        const rows = data.table?.rows || [];
 
+        const seen = new Set();
         allBookings = rows.map(r => {
           const c = r.c || [];
+          const id = c[0]?.v || '';
+          if (seen.has(id)) return null;
+          seen.add(id);
           return {
-            id: c[0]?.v || '',
+            id,
             name: c[1]?.v || '',
             email: c[2]?.v || '',
             phone: c[3]?.v || '',
-            date: formatSheetDate(c[4]),
+            date: formatDate(c[4]),
             time: c[5]?.v || '',
             service: c[6]?.v || '',
             price: formatPrice(c[7]),
             status: c[9]?.v || 'Confirmed'
           };
-        });
-        
-        const today = getLocalDate();
-        filteredBookings = allBookings.filter(b => b.date === today);
+        }).filter(Boolean);
+
+        const today = currentDate();
+        todayBookings = allBookings.filter(b => b.date === today);
         updateStats();
-        displayBookings();
-      } catch (err) {
-        console.error('Load error', err);
-        showNoData('Could not load sheet data.');
+        renderBookings(todayBookings);
+      } catch (e) {
+        console.error(e);
+        showError('Failed to load bookings');
       }
     }
 
-    function formatSheetDate(cell) {
+    function formatDate(cell) {
       if (!cell) return '';
-      if (cell.f) return cell.f;
-      if (typeof cell.v === 'string') return cell.v.split('T')[0];
-      try {
-        const d = new Date(cell.v);
-        return d.toLocaleDateString('en-CA'); // yyyy-mm-dd
-      } catch { return ''; }
+      const v = cell.f || cell.v || '';
+      if (typeof v === 'string' && v.includes('T')) return v.split('T')[0];
+      try { return new Date(v).toLocaleDateString('en-CA'); } catch { return ''; }
     }
 
-    function getLocalDate() {
-      const now = new Date();
-      return now.toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
+    function formatPrice(v) {
+      const num = parseFloat(v?.v || v || 0);
+      return `£${isNaN(num) ? '0.00' : num.toFixed(2)}`;
     }
 
-    function formatPrice(cell) {
-      const v = cell?.v || cell || '';
-      const num = parseFloat(v);
-      return isNaN(num) ? '£0.00' : `£${num.toFixed(2)}`;
+    function currentDate() {
+      return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
     }
 
-    function displayBookings() {
+    function renderBookings(list) {
       const tbody = document.getElementById('tableBody');
       tbody.innerHTML = '';
-      document.getElementById('loading').style.display = 'none';
+      showLoading(false);
+      if (!list.length) return showNoData(true);
 
-      if (!filteredBookings.length) {
-        document.getElementById('noData').style.display = 'block';
-        return;
-      }
-document.getElementById('tableContainer').style.display = 'block';
-
-      filteredBookings.forEach((b, i) => {
+      document.getElementById('tableContainer').style.display = 'block';
+      list.forEach((b,i) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${b.id}</td>
@@ -220,72 +205,60 @@ document.getElementById('tableContainer').style.display = 'block';
           <td><div>${b.email}</div><div style="font-size:0.85rem;color:#999">${b.phone}</div></td>
           <td>${b.time}</td>
           <td>${b.service}</td>
-          <td><strong>${b.price}</strong></td>
-          <td>${statusBadge(b.status)}</td>
+          <td>${b.price}</td>
+          <td>${badge(b.status)}</td>
           <td><button class="btn-view" onclick="openModal(${i})"><i class="fas fa-eye"></i> View</button></td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    function statusBadge(st) {
-      const s = (st||'').toLowerCase();
+    function badge(status) {
+      const s = status?.toLowerCase();
       if (s === 'confirmed') return `<span class="badge badge-confirmed">Confirmed</span>`;
       if (s === 'cancelled') return `<span class="badge badge-cancelled">Cancelled</span>`;
-      return `<span class="badge badge-pending">${st}</span>`;
+      return `<span class="badge badge-pending">${status}</span>`;
+    }
+
+    function updateStats() {
+      const count = todayBookings.length;
+      const revenue = todayBookings
+        .filter(b => b.status.toLowerCase() === 'confirmed')
+        .reduce((sum,b)=>sum+(parseFloat(b.price.replace(/[^\d.]/g,''))||0),0);
+      document.getElementById('todayCount').textContent = count;
+      document.getElementById('revenue').textContent = `£${revenue.toFixed(2)}`;
     }
 
     function openModal(i) {
-      const b = filteredBookings[i];
+      const b = todayBookings[i];
       if (!b) return;
       document.getElementById('modalBody').innerHTML = `
         <p><strong>Name:</strong> ${b.name}</p>
         <p><strong>Email:</strong> ${b.email}</p>
         <p><strong>Phone:</strong> ${b.phone}</p>
-        <p><strong>Date:</strong> ${b.date}</p>
         <p><strong>Time:</strong> ${b.time}</p>
         <p><strong>Service:</strong> ${b.service}</p>
         <p><strong>Price:</strong> ${b.price}</p>
-        <p><strong>Status:</strong> ${statusBadge(b.status)}</p>
+        <p><strong>Status:</strong> ${badge(b.status)}</p>
       `;
       document.getElementById('modal').classList.add('active');
     }
+
     function closeModal(){ document.getElementById('modal').classList.remove('active'); }
 
     function searchBookings() {
       const q = document.getElementById('searchBox').value.toLowerCase();
-      const today = getLocalDate();
-      filteredBookings = allBookings.filter(b =>
-        b.date === today && (
-          b.name?.toLowerCase().includes(q) ||
-          b.email?.toLowerCase().includes(q) ||
-          b.phone?.toLowerCase().includes(q)
-        )
+      const filtered = todayBookings.filter(b =>
+        b.name.toLowerCase().includes(q) ||
+        b.email.toLowerCase().includes(q) ||
+        b.phone.toLowerCase().includes(q)
       );
-      displayBookings();
+      renderBookings(filtered);
     }
 
-    function updateStats() {
-      const todayCount = filteredBookings.length;
-      const revenue = filteredBookings.filter(b => b.status.toLowerCase() === 'confirmed')
-        .reduce((sum, b) => sum + (parseFloat(b.price.replace(/[^\d.-]/g, '')) || 0), 0);
-      document.getElementById('todayCount').innerText = todayCount;
-      document.getElementById('revenue').innerText = `£${revenue.toFixed(2)}`;
-    }
-
-    function showNoData(msg) {
-      const nd = document.getElementById('noData');
-      nd.style.display = 'block';
-      nd.innerHTML = `<i class="fas fa-exclamation-circle" style="font-size:2.6rem;color:#e74c3c"></i><p>${msg}</p>`;
-    }
-
-    function quickToast(txt) {
-      const t=document.createElement('div');
-      t.innerText=txt;
-      Object.assign(t.style,{position:'fixed',bottom:'22px',left:'50%',transform:'translateX(-50%)',background:'#222',color:'#fff',padding:'10px 14px',borderRadius:'8px',zIndex:2000});
-      document.body.appendChild(t);
-      setTimeout(()=>t.remove(),3000);
-    }
+    function showLoading(v){ document.getElementById('loading').style.display=v?'block':'none'; }
+    function showNoData(v){ document.getElementById('noData').style.display=v?'block':'none'; }
+    function showError(msg){ document.getElementById('noData').style.display='block'; document.getElementById('noData').innerHTML=`<i class="fas fa-exclamation-circle" style="font-size:2rem;color:#e74c3c"></i><p>${msg}</p>`; }
 
     setInterval(loadBookings, 30000);
   </script>
