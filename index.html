@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
@@ -8,7 +8,7 @@
 <style>
 /* ====== KEEP EXACT UI / BRAND COLORS AS REQUESTED ====== */
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:"Helvetica Neue",Arial,sans-serif;background:#0a0a0a;color:#f0f0f0;}
+body{font-family:"Helvetica Neue",Arial,sans-serif;background:#0a0a0a;color:#f0f0f0;min-height:100vh;}
 header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;
 background:linear-gradient(135deg,#000,#1a1a1a);color:#FFD700;padding:18px 22px;
 border-bottom:1px solid #222;box-shadow:0 4px 15px rgba(0,0,0,0.5);position:sticky;top:0;z-index:50;}
@@ -51,17 +51,18 @@ td{color:#ddd;font-size:0.95rem;}
 .spinner{border:3px solid rgba(255,215,0,0.18);border-top:3px solid #FFD700;border-radius:50%;width:30px;height:30px;animation:spin 1s linear infinite;margin:10px auto 12px;}
 @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
 
-/* Add Booking Modal - styled to match booking form exactly */
-.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);display:none;justify-content:center;align-items:center;z-index:999;}
-.modal.active{display:flex;}
-.modal-content{background:#111;padding:24px;border-radius:10px;width:92%;max-width:900px;box-shadow:0 0 20px rgba(0,0,0,.5);border:1px solid #333;color:#fff}
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
-.modal-header h3{color:#FFD700;margin:0;}
+/* Add Booking Modal - slide up full-screen */
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);display:flex;align-items:flex-end;justify-content:center;opacity:0;visibility:hidden;transition:opacity .25s ease,visibility .25s ease;z-index:999;}
+.modal.active{opacity:1;visibility:visible;}
+.modal-content{background:#111;width:100%;max-width:900px;border-radius:18px 18px 0 0;padding:18px;border-top:2px solid #FFD700;transform:translateY(100%);transition:transform .35s cubic-bezier(.22,1,.36,1);max-height:95vh;display:flex;flex-direction:column;}
+.modal.active .modal-content{transform:translateY(0);}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.modal-header h3{color:#FFD700;margin:0;font-size:1.1rem;}
 .modal-close{background:none;border:none;color:#888;font-size:1.6rem;cursor:pointer;}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-@media(max-width:840px){.form-grid{grid-template-columns:1fr}}
+.modal-body{overflow:auto;padding-right:6px;}
+.modal-footer{padding-top:12px;margin-top:8px;border-top:1px solid #222;}
 
-/* reuse booking form styles (kept minimal to match) */
+/* booking form styles reused */
 label{display:block;margin-bottom:6px;color:#ffd700;font-weight:600}
 input,select,textarea{width:100%;padding:12px;border-radius:8px;border:1px solid #333;background:#1a1a1a;color:#fff;font-size:1rem;margin-bottom:14px}
 .time-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;margin-top:8px}
@@ -72,23 +73,33 @@ input,select,textarea{width:100%;padding:12px;border-radius:8px;border:1px solid
 .btn.full{width:100%;padding:14px;border-radius:8px;border:none;background:linear-gradient(135deg,#ffd700,#d4af37);color:#000;font-weight:800;cursor:pointer}
 .gold-note{color:#FFD700;font-size:0.9rem;margin-top:10px;text-align:center}
 .muted{color:#999;font-size:.9rem;text-align:center}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:840px){.form-grid{grid-template-columns:1fr}.modal-content{border-radius:16px 16px 0 0;}}
 
-/* Bottom paging controls */
+/* Bottom pager controls */
 .pager{display:flex;gap:8px;align-items:center;justify-content:center;padding:16px 0;color:#ddd}
 .pager button{background:#222;color:#FFD700;border:1px solid #333;padding:8px 12px;border-radius:8px;cursor:pointer}
-.pager .page-num{padding:6px 10px;border-radius:6px;background:#161616;border:1px solid #333;color:#fff}
+.pager .page-num{padding:6px 10px;border-radius:6px;background:#161616;border:1px solid #333;color:#fff;min-width:120px;text-align:center}
+
+/* responsive adjustments */
+@media(max-width:1100px){ table{min-width:700px;} }
+@media(max-width:700px){
+  th,td{padding:10px 8px;font-size:0.85rem;}
+  .brand h1{font-size:1rem;}
+  header{padding:12px;}
+}
 </style>
 </head>
 <body>
 <header>
   <div class="brand">
     <h1><i class="fas fa-cut"></i> South Fade Admin</h1>
-    <p>Dashboard</p>
+    <p style="color:#ddd;margin-left:6px;">Dashboard</p>
   </div>
   <div>
-    <button id="addBookingBtn" class="btn btn-primary">＋ Add Booking</button>
-    <button id="clearBtn" class="btn btn-secondary">🗑 Clear (hide on dashboard)</button>
-    <button id="refreshBtn" class="btn btn-primary">⟳ Refresh</button>
+    <button id="addBookingBtn" class="btn btn-primary"><i class="fas fa-plus"></i> Add Booking</button>
+    <button id="clearBtn" class="btn btn-secondary"><i class="fas fa-trash"></i> Clear</button>
+    <button id="refreshBtn" class="btn btn-primary"><i class="fas fa-sync"></i> Refresh</button>
   </div>
 </header>
 
@@ -102,18 +113,13 @@ input,select,textarea{width:100%;padding:12px;border-radius:8px;border:1px solid
   <section class="table-box">
     <div class="table-header">
       <div>
-        <h2>✂ Bookings</h2>
-        <div id="viewingLabel" style="color:#ddd;margin-top:6px">📅 Viewing: <span id="viewingDate"></span></div>
+        <h2><i class="fas fa-calendar-alt"></i> Bookings</h2>
+        <div id="viewingLabel" style="color:#ddd;margin-top:6px">Viewing: <span id="viewingDate"></span></div>
       </div>
-      <div class="search">
-        <input id="searchBox" type="text" placeholder="Search name, email, or barber..." />
-      </div>
+      <div class="search"><input id="searchBox" type="text" placeholder="Search name, email, or barber..." /><i class="fas fa-search"></i></div>
     </div>
 
-    <div id="loading" class="loading">
-      <div class="spinner"></div>
-      <p>Loading bookings…</p>
-    </div>
+    <div id="loading" class="loading"><div class="spinner"></div><p>Loading bookings…</p></div>
 
     <div id="tableContainer" style="display:none">
       <div class="table-scroll">
@@ -129,75 +135,79 @@ input,select,textarea{width:100%;padding:12px;border-radius:8px;border:1px solid
     </div>
 
     <div id="noData" class="no-data" style="display:none">
-      <i style="font-size:3rem;margin-bottom:8px;">⌧</i>
+      <div style="font-size:3rem;margin-bottom:8px;">⌧</div>
       <p>No bookings for this date</p>
     </div>
 
-    <div class="pager" id="pagerControls" style="display:flex">
-      <button id="prevDay">← Previous</button>
-      <div class="page-num" id="dayIndexLabel">0</div>
-      <button id="nextDay">Next →</button>
+    <div class="pager" id="pagerControls">
+      <button id="prevDay">← Today</button>
+      <div class="page-num" id="dayIndexLabel">Today</div>
+      <button id="nextDay">Tomorrow →</button>
     </div>
   </section>
 </main>
 
-<!-- Modal: exact booking form (keeps structure & fields) -->
+<!-- Slide-up booking modal (exact booking form contents) -->
 <div id="bookingModal" class="modal" role="dialog" aria-modal="true">
   <div class="modal-content" role="document">
     <div class="modal-header">
-      <h3>＋ Add Booking</h3>
+      <h3><i class="fas fa-plus-circle"></i> Add Booking</h3>
       <button class="modal-close" id="closeModalBtn">&times;</button>
     </div>
 
-    <form id="modalBookingForm" autocomplete="off">
-      <label for="m_name">Full name *</label>
-      <input id="m_name" name="name" type="text" required placeholder="Alex Johnson">
+    <div class="modal-body">
+      <form id="modalBookingForm" autocomplete="off">
+        <label for="m_name">Full name *</label>
+        <input id="m_name" name="name" type="text" required placeholder="Alex Johnson">
 
-      <div class="form-grid">
-        <div>
-          <label for="m_email">Email *</label>
-          <input id="m_email" name="email" type="email" required placeholder="you@example.com">
+        <div class="form-grid">
+          <div>
+            <label for="m_email">Email *</label>
+            <input id="m_email" name="email" type="email" required placeholder="you@example.com">
+          </div>
+          <div>
+            <label for="m_phone">Phone *</label>
+            <input id="m_phone" name="phone" type="tel" required placeholder="+44 7...">
+          </div>
         </div>
-        <div>
-          <label for="m_phone">Phone *</label>
-          <input id="m_phone" name="phone" type="tel" required placeholder="+44 7...">
+
+        <label for="m_service">Service *</label>
+        <select id="m_service" required></select>
+
+        <div class="form-grid">
+          <div>
+            <label for="m_date">Preferred date *</label>
+            <input id="m_date" type="date" required>
+          </div>
+          <div>
+            <label for="m_barber">Choose Master Barber *</label>
+            <select id="m_barber" required>
+              <option value="">-- choose master barber --</option>
+            </select>
+          </div>
         </div>
-      </div>
 
-      <label for="m_service">Service *</label>
-      <select id="m_service" required></select>
+        <label>Available time slots *</label>
+        <div id="m_slots" class="time-slots"><div class="muted">Select service, date and master barber to load slots</div></div>
+        <input id="m_time" name="time" type="hidden" required>
 
-      <div class="form-grid">
-        <div>
-          <label for="m_date">Preferred date *</label>
-          <input id="m_date" type="date" required>
-        </div>
-        <div>
-          <label for="m_barber">Choose Master Barber *</label>
-          <select id="m_barber" required>
-            <option value="">-- choose master barber --</option>
-          </select>
-        </div>
-      </div>
+        <label for="m_notes">Notes (optional)</label>
+        <textarea id="m_notes" rows="3" placeholder="Anything we should know?"></textarea>
 
-      <label>Available time slots *</label>
-      <div id="m_slots" class="time-slots"><div class="muted">Select service, date and master barber to load slots</div></div>
-      <input id="m_time" name="time" type="hidden" required>
+      </form>
+    </div>
 
-      <label for="m_notes">Notes (optional)</label>
-      <textarea id="m_notes" rows="3" placeholder="Anything we should know?"></textarea>
-
-      <div style="margin-top:12px">
-        <button id="m_submitBtn" class="btn full" type="submit">Book appointment</button>
-      </div>
-    </form>
+    <div class="modal-footer">
+      <button id="m_submitBtn" class="btn full" type="submit" form="modalBookingForm"><i class="fas fa-calendar-check"></i> Book appointment</button>
+    </div>
   </div>
 </div>
 
 <!-- Supabase SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
 <script>
-/* ================= CONFIG - keep your keys/URLs ================= */
+/* ================= CONFIG - KEEP KEYS/URLS YOU PROVIDED ================= */
 const SUPABASE_URL = 'https://ufcfbggsjemgzcmdhpts.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVmY2ZiZ2dzamVtZ3pjbWRocHRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAzNjMzNjYsImV4cCI6MjA3NTkzOTM2Nn0.IWB96tPDcVcCp36azPNLewik41xL3FrDjLLtIMqwT-4';
 const EMAIL_WEBHOOK = 'https://script.google.com/macros/s/AKfycbzhZNRIOPimun3NF-9ZTiSF7QHNISm1dczpIEHx6rg2eyElL7FKBLd1mxOHQ34exVM/exec';
@@ -285,31 +295,38 @@ const prevDayBtn = document.getElementById('prevDay');
 const nextDayBtn = document.getElementById('nextDay');
 const dayIndexLabel = document.getElementById('dayIndexLabel');
 
-/* ================= state ================= */
-let selectedDate = new Date(); // current viewed date (Date object)
-let clearedForDate = {}; // map dateStr => Set of booking ids hidden on dashboard
-// persisted in localStorage under key 'sf_dashboard_cleared'
-(function loadCleared() {
-  try {
+/* ================= STATE ================= */
+// dayOffset: 0 = today, 1 = tomorrow
+let dayOffset = 0;
+function getSelectedDate(){
+  const d = new Date();
+  d.setDate(d.getDate() + dayOffset);
+  return d;
+}
+
+// clearedForDate: map dateStr => Set(ids) for rows hidden on dashboard only
+let clearedForDate = {};
+(function loadCleared(){
+  try{
     const v = JSON.parse(localStorage.getItem('sf_dashboard_cleared') || '{}');
     Object.keys(v).forEach(k => clearedForDate[k] = new Set(v[k]));
-  } catch(e){ clearedForDate = {}; }
+  }catch(e){ clearedForDate = {}; }
 })();
-
-/* ========== utilities ========== */
-function formatDateISO(d){ return d.toISOString().split('T')[0]; }
-function formatDisplayDate(d){
-  // e.g. 2025-10-15 -> 15/10/2025
-  const dt = new Date(d);
-  return `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${dt.getFullYear()}`;
-}
-function persistCleared() {
+function persistCleared(){
   const out = {};
   Object.keys(clearedForDate).forEach(k => out[k] = Array.from(clearedForDate[k]));
   localStorage.setItem('sf_dashboard_cleared', JSON.stringify(out));
 }
 
-/* 40-minute slot generator (same logic used in booking form) */
+/* ========= Utilities ========= */
+function formatDateISO(d){ return d.toISOString().split('T')[0]; }
+function formatDisplayDate(d){
+  const dt = new Date(d);
+  return `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${dt.getFullYear()}`;
+}
+function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+/* 40-minute slot generation */
 function generate40MinSlotsForDay(dayIndex){
   const open = 9;
   const close = (dayIndex === 0) ? 18 : (dayIndex === 6) ? 19 : 20;
@@ -330,12 +347,12 @@ function generate40MinSlotsForDay(dayIndex){
   });
 }
 
-/* ================= load bookings for selectedDate ================= */
+/* ================= Load bookings for selected day (today or tomorrow) ================= */
 async function loadBookings(){
-  // show only for selectedDate
+  const selectedDate = getSelectedDate();
   const dateStr = formatDateISO(selectedDate);
-  viewingDateEl.textContent = `${formatDisplayDate(selectedDate)} ( ${dateStr} )`; // visible label
-  dayIndexLabel.textContent = `${formatDisplayDate(selectedDate)}`;
+  viewingDateEl.textContent = `${formatDisplayDate(selectedDate)} (${dateStr})`;
+  dayIndexLabel.textContent = dayOffset === 0 ? 'Today' : 'Tomorrow';
 
   loading.style.display = 'block';
   noData.style.display = 'none';
@@ -350,31 +367,29 @@ async function loadBookings(){
     .order('booking_time', { ascending: true });
 
   loading.style.display = 'none';
-  if (error) { console.error('loadBookings error', error); noData.style.display = 'block'; return; }
-  if (!data || data.length === 0) { noData.style.display = 'block'; updateStats([], dateStr); return; }
+  if(error){ console.error('loadBookings error', error); noData.style.display = 'block'; updateStats([], dateStr); return; }
+  if(!data || data.length === 0){ noData.style.display = 'block'; updateStats([], dateStr); return; }
 
-  // apply cleared filter (hide ids in clearedForDate[dateStr])
   const clearedSet = clearedForDate[dateStr] || new Set();
   const visible = data.filter(b => !clearedSet.has(String(b.id)));
 
   tableContainer.style.display = visible.length ? 'block' : 'none';
-  if (!visible.length) noData.style.display = 'block';
+  if(!visible.length) noData.style.display = 'block';
 
   renderTable(visible);
-  updateStats(data, dateStr); // pass full data for stats (counts & revenue)
+  updateStats(data, dateStr); // pass full data for accurate counts & revenue
 }
 
 /* render visible rows */
-function renderTable(data){
+function renderTable(rows){
   tableBody.innerHTML = '';
-  data.forEach(b => {
+  rows.forEach(b => {
     const tr = document.createElement('tr');
 
-    const cancelBtnHTML = (b.status === 'confirmed')
-      ? `<button data-id="${b.id}" class="btn-cancel small" style="background:#e74c3c;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-weight:700;">✖ Cancel</button>`
-      : `<button data-id="${b.id}" class="btn-cancel small" style="background:#555;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-weight:700;">↺ Mark</button>`;
-
     const statusClass = (b.status === 'confirmed') ? 'badge-confirmed' : (b.status === 'cancelled') ? 'badge-cancelled' : 'badge-finished';
+    const cancelBtnHTML = (b.status === 'confirmed')
+      ? `<button data-id="${b.id}" class="btn-cancel" style="background:#e74c3c;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-weight:700;">✖ Cancel</button>`
+      : `<button data-id="${b.id}" class="btn-mark" style="background:#555;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-weight:700;">↺ Mark</button>`;
 
     tr.innerHTML = `
       <td>${escapeHtml(b.customer_name||'')}</td>
@@ -391,45 +406,44 @@ function renderTable(data){
     tableBody.appendChild(tr);
   });
 
-    // wire cancel buttons (update status to 'cancelled') and hide buttons
+  // wire cancel/mark buttons
   tableBody.querySelectorAll('button[data-id]').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
       const id = btn.getAttribute('data-id');
       if(!confirm('Set this booking to "cancelled"?')) return;
       btn.disabled = true;
-      const { error } = await sb.from('bookings').update({ status: 'cancelled' }).eq('id', id);
+      const { error } = await sb.from('bookings').update({ status:'cancelled' }).eq('id', id);
       if(error){ alert('Cancel failed'); console.error(error); btn.disabled=false; return; }
       loadBookings();
     });
   });
 
+  // wire hide buttons (dashboard-only hide)
   tableBody.querySelectorAll('button[data-hide-id]').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const id = btn.getAttribute('data-hide-id');
-      const dateStr = formatDateISO(selectedDate);
+      const dateStr = formatDateISO(getSelectedDate());
       clearedForDate[dateStr] = clearedForDate[dateStr] || new Set();
       clearedForDate[dateStr].add(String(id));
       persistCleared();
-      // remove row from DOM
       btn.closest('tr').remove();
-      // if none left, show noData
-      if (!tableBody.querySelectorAll('tr').length) { tableContainer.style.display='none'; noData.style.display='block'; }
+      if(!tableBody.querySelectorAll('tr').length){ tableContainer.style.display='none'; noData.style.display='block'; }
       updateStatsFromDashboard();
     });
   });
 }
 
-/* update stats using full dataset (so counts & revenue are accurate) */
-function updateStats(fullData, todayStr){
-  // fullData may include hidden (cleared) rows; show counts for that date
-  const todayBookings = fullData.filter(b => b.booking_date === todayStr);
-  const confirmed = todayBookings.filter(b => b.status === 'confirmed');
-  const totalRevenue = confirmed.reduce((sum,b) => sum + (parseFloat(b.price) || 0), 0);
-  todayCountEl.textContent = todayBookings.length;
-  totalCountEl.textContent = todayBookings.length;
+/* update stats (based on full data from supabase for selected date) */
+function updateStats(fullData, dateStr){
+  const dateBookings = fullData.filter(b => b.booking_date === dateStr);
+  const confirmed = dateBookings.filter(b => b.status === 'confirmed');
+  const totalRevenue = confirmed.reduce((s,b)=> s + (parseFloat(b.price)||0), 0);
+  todayCountEl.textContent = dateBookings.length;
+  totalCountEl.textContent = dateBookings.length;
   revenueEl.textContent = `£${totalRevenue.toFixed(2)}`;
 }
-/* update stats based on what's currently visible on dashboard (after hide) */
+
+/* update stats based on visible dashboard rows (after hides) */
 function updateStatsFromDashboard(){
   const rows = tableBody.querySelectorAll('tr');
   const count = rows.length;
@@ -443,7 +457,7 @@ function updateStatsFromDashboard(){
   revenueEl.textContent = `£${revenueSum.toFixed(2)}`;
 }
 
-/* ================= Search / Refresh / Clear ==================== */
+/* ============ Search / Refresh / Clear ============ */
 searchBox.addEventListener('input', ()=>{
   const q = searchBox.value.toLowerCase();
   tableBody.querySelectorAll('tr').forEach(r=>{
@@ -452,40 +466,32 @@ searchBox.addEventListener('input', ()=>{
 });
 
 refreshBtn.addEventListener('click', async ()=>{
-  // refresh should remove cleared hides for this date and re-fetch from supabase
-  const dateStr = formatDateISO(selectedDate);
+  // Refresh should remove clears for current viewed date (restore hidden rows) and re-fetch
+  const dateStr = formatDateISO(getSelectedDate());
   if(clearedForDate[dateStr]) delete clearedForDate[dateStr];
   persistCleared();
   await loadBookings();
 });
 
 clearBtn.addEventListener('click', ()=>{
-  // Clear (hide) all visible rows for this date on dashboard only (store ids)
   if(!confirm('Hide all currently visible bookings for this date on the dashboard? You can restore them with Refresh.')) return;
-  const dateStr = formatDateISO(selectedDate);
+  const dateStr = formatDateISO(getSelectedDate());
   clearedForDate[dateStr] = clearedForDate[dateStr] || new Set();
   tableBody.querySelectorAll('tr').forEach(r=>{
     const hideBtn = r.querySelector('button[data-hide-id]');
-    if(hideBtn){
-      clearedForDate[dateStr].add(String(hideBtn.getAttribute('data-hide-id')));
-    }
+    if(hideBtn) clearedForDate[dateStr].add(String(hideBtn.getAttribute('data-hide-id')));
   });
   persistCleared();
-  // remove rows
   tableBody.innerHTML = '';
   tableContainer.style.display='none';
   noData.style.display='block';
   updateStatsFromDashboard();
 });
 
-
-/* ================= Modal populators & slot logic (same as booking form) ================= */
+/* ================= Modal: populate barbers & services and slot logic (same as booking form) ================= */
 function populateModalBarbers(){
   m_barber.innerHTML = '<option value="">-- choose master barber --</option>';
-  BARBERS.forEach(b => {
-    const o = document.createElement('option'); o.value = b; o.textContent = b;
-    m_barber.appendChild(o);
-  });
+  BARBERS.forEach(b => { const o = document.createElement('option'); o.value = b; o.textContent = b; m_barber.appendChild(o); });
 }
 function populateModalServices(){
   m_service.innerHTML = '';
@@ -501,6 +507,7 @@ function populateModalServices(){
   });
 }
 m_date.min = new Date().toISOString().split('T')[0];
+
 function updateModalBarbersForDate(dateStr){
   if(!dateStr) return;
   const day = new Date(dateStr).getDay();
@@ -511,6 +518,7 @@ function updateModalBarbersForDate(dateStr){
     opt.style.opacity = works ? 1 : 0.4;
   });
 }
+
 async function renderModalSlots(){
   m_time.value = '';
   m_slots.innerHTML = '';
@@ -539,9 +547,7 @@ async function renderModalSlots(){
     });
     m_slots.appendChild(el);
   });
-}
-
-/* ================= Modal submit (same endpoint/table and webhook) ================= */
+}/* ================= Modal submit (same endpoint/table and webhook) ================= */
 modalForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
   const svc = m_service.value ? JSON.parse(m_service.value) : null;
@@ -559,7 +565,7 @@ modalForm.addEventListener('submit', async (e)=>{
   };
 
   if(!payload.customer_name || !payload.customer_email || !payload.customer_phone || !payload.barber || !payload.service || !payload.booking_date || !payload.booking_time){
-    m_submitBtn.textContent = 'Fill all fields'; setTimeout(()=>m_submitBtn.innerHTML = 'Book appointment', 2000); return;
+    m_submitBtn.textContent = 'Fill all fields'; setTimeout(()=>m_submitBtn.innerHTML = '<i class="fas fa-calendar-check"></i> Book appointment', 2000); return;
   }
 
   m_submitBtn.disabled = true; m_submitBtn.textContent = 'Booking...';
@@ -568,7 +574,7 @@ modalForm.addEventListener('submit', async (e)=>{
   const { data: clash } = await sb.from('bookings').select('id').eq('booking_date', payload.booking_date).eq('booking_time', payload.booking_time).eq('barber', payload.barber).eq('status','confirmed').limit(1);
   if(clash && clash.length){
     m_submitBtn.textContent = 'Slot Unavailable';
-    setTimeout(()=>{ m_submitBtn.innerHTML = 'Book appointment'; m_submitBtn.disabled=false; }, 2000);
+    setTimeout(()=>{ m_submitBtn.innerHTML = '<i class="fas fa-calendar-check"></i> Book appointment'; m_submitBtn.disabled=false; }, 2000);
     return;
   }
 
@@ -581,16 +587,16 @@ modalForm.addEventListener('submit', async (e)=>{
   m_submitBtn.textContent = 'Booking Confirmed ✓';
   setTimeout(()=> {
     m_submitBtn.disabled = false;
-    m_submitBtn.innerHTML = 'Book appointment';
+    m_submitBtn.innerHTML = '<i class="fas fa-calendar-check"></i> Book appointment';
     bookingModal.classList.remove('active');
     modalForm.reset();
     m_slots.innerHTML = '<div class="muted">Select service, date and master barber to load slots</div>';
-    // reload for the date if it matches selectedDate
-    if(formatDateISO(new Date(payload.booking_date)) === formatDateISO(selectedDate)) loadBookings();
-  }, 800);
+    // reload if inserted booking belongs to current viewed date
+    if(formatDateISO(new Date(payload.booking_date)) === formatDateISO(getSelectedDate())) loadBookings();
+  }, 700);
 });
 
-/* ================= Modal open/close wiring ================= */
+/* ================= Modal open/close and wiring inputs ================= */
 addBookingBtn.addEventListener('click', ()=>{
   bookingModal.classList.add('active');
   populateModalServices();
@@ -608,30 +614,30 @@ m_date.addEventListener('change', ()=>{
 });
 m_barber.addEventListener('change', renderModalSlots);
 m_service.addEventListener('change', renderModalSlots);
-/* ================= Paging: prev/next day ================= */
+
+/* ================= Paging: today/tomorrow only ================= */
 prevDayBtn.addEventListener('click', ()=>{
-  selectedDate.setDate(selectedDate.getDate() - 1);
+  // go to today (offset 0)
+  dayOffset = 0;
   loadBookings();
 });
 nextDayBtn.addEventListener('click', ()=>{
-  selectedDate.setDate(selectedDate.getDate() + 1);
+  // go to tomorrow (offset 1)
+  dayOffset = 1;
   loadBookings();
 });
 
-/* ================= Real-time subscription (keeps it if you want auto-updates) ================= */
+/* ================= Real-time subscription (optional) ================= */
 try {
   sb.channel('bookings-changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => loadBookings())
     .subscribe();
 } catch(e){ console.warn('real-time subscription failed', e); }
 
-/* ================= Utilities ================= */
-function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-
 /* ================= Init ================= */
 (function init(){
   // default to today
-  selectedDate = new Date();
+  dayOffset = 0;
   loadBookings();
 })();
 </script>
