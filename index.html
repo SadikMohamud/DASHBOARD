@@ -45,6 +45,7 @@ td{color:#ddd;font-size:0.95rem;}
 .badge{display:inline-block;padding:5px 10px;border-radius:18px;font-weight:700;text-transform:uppercase;font-size:0.78rem;}
 .badge-confirmed{background:rgba(40,167,69,0.12);color:#56d678;border:1px solid #2b7a44;}
 .badge-cancelled{background:rgba(220,53,69,0.12);color:#ff6b7f;border:1px solid #8a2a33;}
+.badge-finished{background:rgba(0,0,0,0.2);color:#aaa;border:1px solid #444;}
 
 .loading, .no-data{text-align:center;padding:36px;color:#888;}
 .spinner{border:3px solid rgba(255,215,0,0.18);border-top:3px solid #FFD700;border-radius:50%;width:30px;height:30px;animation:spin 1s linear infinite;margin:10px auto 12px;}
@@ -71,6 +72,11 @@ input,select,textarea{width:100%;padding:12px;border-radius:8px;border:1px solid
 .btn.full{width:100%;padding:14px;border-radius:8px;border:none;background:linear-gradient(135deg,#ffd700,#d4af37);color:#000;font-weight:800;cursor:pointer}
 .gold-note{color:#FFD700;font-size:0.9rem;margin-top:10px;text-align:center}
 .muted{color:#999;font-size:.9rem;text-align:center}
+
+/* Bottom paging controls */
+.pager{display:flex;gap:8px;align-items:center;justify-content:center;padding:16px 0;color:#ddd}
+.pager button{background:#222;color:#FFD700;border:1px solid #333;padding:8px 12px;border-radius:8px;cursor:pointer}
+.pager .page-num{padding:6px 10px;border-radius:6px;background:#161616;border:1px solid #333;color:#fff}
 </style>
 </head>
 <body>
@@ -80,9 +86,9 @@ input,select,textarea{width:100%;padding:12px;border-radius:8px;border:1px solid
     <p>Dashboard</p>
   </div>
   <div>
-    <button id="addBookingBtn" class="btn btn-primary"><i class="fas fa-plus"></i> Add Booking</button>
-    <button id="clearBtn" class="btn btn-secondary"><i class="fas fa-trash"></i> Clear</button>
-    <button id="refreshBtn" class="btn btn-primary"><i class="fas fa-sync"></i> Refresh</button>
+    <button id="addBookingBtn" class="btn btn-primary">＋ Add Booking</button>
+    <button id="clearBtn" class="btn btn-secondary">🗑 Clear (hide on dashboard)</button>
+    <button id="refreshBtn" class="btn btn-primary">⟳ Refresh</button>
   </div>
 </header>
 
@@ -90,15 +96,17 @@ input,select,textarea{width:100%;padding:12px;border-radius:8px;border:1px solid
   <section class="stats">
     <div class="stat"><h3>Today's Bookings</h3><div class="num" id="todayCount">0</div><div class="lbl">Appointments</div></div>
     <div class="stat"><h3>Total Revenue</h3><div class="num" id="revenue">£0.00</div><div class="lbl">Confirmed only</div></div>
-    <div class="stat"><h3>Total Bookings</h3><div class="num" id="totalCount">0</div><div class="lbl">Last 5 days</div></div>
+    <div class="stat"><h3>Total Bookings</h3><div class="num" id="totalCount">0</div><div class="lbl">Selected date</div></div>
   </section>
 
   <section class="table-box">
     <div class="table-header">
-      <h2><i class="fas fa-calendar-alt"></i> Bookings (Today + Next 5 Days)</h2>
+      <div>
+        <h2>✂ Bookings</h2>
+        <div id="viewingLabel" style="color:#ddd;margin-top:6px">📅 Viewing: <span id="viewingDate"></span></div>
+      </div>
       <div class="search">
         <input id="searchBox" type="text" placeholder="Search name, email, or barber..." />
-        <i class="fas fa-search"></i>
       </div>
     </div>
 
@@ -121,8 +129,14 @@ input,select,textarea{width:100%;padding:12px;border-radius:8px;border:1px solid
     </div>
 
     <div id="noData" class="no-data" style="display:none">
-      <i class="fas fa-inbox" style="font-size:3rem;margin-bottom:8px;"></i>
-      <p>No bookings found</p>
+      <i style="font-size:3rem;margin-bottom:8px;">⌧</i>
+      <p>No bookings for this date</p>
+    </div>
+
+    <div class="pager" id="pagerControls" style="display:flex">
+      <button id="prevDay">← Previous</button>
+      <div class="page-num" id="dayIndexLabel">0</div>
+      <button id="nextDay">Next →</button>
     </div>
   </section>
 </main>
@@ -131,7 +145,7 @@ input,select,textarea{width:100%;padding:12px;border-radius:8px;border:1px solid
 <div id="bookingModal" class="modal" role="dialog" aria-modal="true">
   <div class="modal-content" role="document">
     <div class="modal-header">
-      <h3><i class="fas fa-plus-circle"></i> Add Booking</h3>
+      <h3>＋ Add Booking</h3>
       <button class="modal-close" id="closeModalBtn">&times;</button>
     </div>
 
@@ -174,7 +188,7 @@ input,select,textarea{width:100%;padding:12px;border-radius:8px;border:1px solid
       <textarea id="m_notes" rows="3" placeholder="Anything we should know?"></textarea>
 
       <div style="margin-top:12px">
-        <button id="m_submitBtn" class="btn full" type="submit"><i class="fas fa-calendar-check"></i> Book appointment</button>
+        <button id="m_submitBtn" class="btn full" type="submit">Book appointment</button>
       </div>
     </form>
   </div>
@@ -191,70 +205,54 @@ const EMAIL_WEBHOOK = 'https://script.google.com/macros/s/AKfycbzhZNRIOPimun3NF-
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /* ================= BARBERS + SERVICES (front-end driven) ================= */
-// Keep the same barber list + schedule (grey-out logic on front-end)
 const BARBERS = ['Alex','Moh','Yass','Ali'];
 const BARBER_SCHEDULE = {
-  'Alex':[0,1,2,3,4,5,6], // 7 days
-  'Moh':[1,2],            // Mon-Tue
-  'Yass':[3,4,5,6],       // Wed-Sat
-  'Ali':[5,6,0]           // Fri-Sun
+  'Alex':[0,1,2,3,4,5,6],
+  'Moh':[1,2],
+  'Yass':[3,4,5,6],
+  'Ali':[5,6,0]
 };
 
-// Services exactly as requested (hardcoded)
 const servicesData = [
-  {
-    id: 1, icon: 'fas fa-cut', title: 'Classic/Fade', description: '', prices: [
-      { name: 'Buzz cut Fade', price: '24' },
-      { name: 'Wash & cut', price: '25' },
-      { name: 'Skin Fade', price: '27' },
-      { name: 'Student', price: '23' },
-      { name: 'Student Skin fade', price: '25' },
-    ]
-  },
-  {
-    id: 2, icon: 'fas fa-scissors', title: 'Scissor Cut', description: '', prices: [
-      { name: 'Scissor Cut', price: '27' },
-      { name: 'Restyle', price: '30' },
-      { name: 'Complimentary wash with every haircut', price: '0' }
-    ]
-  },
-  {
-    id: 3, icon: 'fas fa-user-tie', title: 'Beard Trim', description: '', prices: [
-      { name: 'Beard Trim clipper', price: '17' },
-      { name: 'Beard trim Shape up & hot Towel', price: '20' },
-      { name: 'Hot Towel Shave', price: '25' },
-      { name: 'Complimentary wash with every haircut', price: '0' }
-    ]
-  },
-  {
-    id: 4, icon: 'fas fa-spa', title: 'Special Treatment', description: '', prices: [
-      { name: 'Nose & Ear waxing', price: '10' },
-      { name: 'Threading', price: '10' },
-      { name: 'Facial', price: '20' },
-      { name: 'Face mask', price: '10' }
-    ]
-  },
-  {
-    id: 5, icon: 'fas fa-child', title: 'Kids Cut', description: '', prices: [
-      { name: 'Boys Cut', price: '20' },
-      { name: 'Girls Cut', price: '25' },
-      { name: 'Complimentary wash with every haircut', price: '0' }
-    ]
-  },
-  {
-    id: 6, icon: 'fas fa-user-graduate', title: 'O.A.P Haircut', description: '', prices: [
-      { name: 'O.A.P Haircut', price: '22' },
-      { name: 'Complimentary wash with every haircut', price: '0' }
-    ]
-  },
-  {
-    id: 7, icon: 'fas fa-gem', title: 'Packages', description: '', prices: [
-      { name: 'South Fade Signature (Wash + Cut + Beard + Hot Towel + Facial)', price: '55' },
-      { name: 'Skin fade + beard + shape up and hot towel', price: '45' },
-      { name: 'Hair cut + beard + shape up + hot towel', price: '42' },
-      { name: 'Hair cut + beard trim clipper only', price: '39' }
-    ]
-  }
+  { id:1, title:'Classic/Fade', prices:[
+      { name:'Buzz cut Fade', price:'24' },
+      { name:'Wash & cut', price:'25' },
+      { name:'Skin Fade', price:'27' },
+      { name:'Student', price:'23' },
+      { name:'Student Skin fade', price:'25' }
+    ]},
+  { id:2, title:'Scissor Cut', prices:[
+      { name:'Scissor Cut', price:'27' },
+      { name:'Restyle', price:'30' },
+      { name:'Complimentary wash with every haircut', price:'0' }
+    ]},
+  { id:3, title:'Beard Trim', prices:[
+      { name:'Beard Trim clipper', price:'17' },
+      { name:'Beard trim Shape up & hot Towel', price:'20' },
+      { name:'Hot Towel Shave', price:'25' },
+      { name:'Complimentary wash with every haircut', price:'0' }
+    ]},
+  { id:4, title:'Special Treatment', prices:[
+      { name:'Nose & Ear waxing', price:'10' },
+      { name:'Threading', price:'10' },
+      { name:'Facial', price:'20' },
+      { name:'Face mask', price:'10' }
+    ]},
+  { id:5, title:'Kids Cut', prices:[
+      { name:'Boys Cut', price:'20' },
+      { name:'Girls Cut', price:'25' },
+      { name:'Complimentary wash with every haircut', price:'0' }
+    ]},
+  { id:6, title:'O.A.P Haircut', prices:[
+      { name:'O.A.P Haircut', price:'22' },
+      { name:'Complimentary wash with every haircut', price:'0' }
+    ]},
+  { id:7, title:'Packages', prices:[
+      { name:'South Fade Signature (Wash + Cut + Beard + Hot Towel + Facial)', price:'55' },
+      { name:'Skin fade + beard + shape up and hot towel', price:'45' },
+      { name:'Hair cut + beard + shape up + hot towel', price:'42' },
+      { name:'Hair cut + beard trim clipper only', price:'39' }
+    ]}
 ];
 
 /* ================= DOM refs ================= */
@@ -268,7 +266,6 @@ const totalCountEl = document.getElementById('totalCount');
 const searchBox = document.getElementById('searchBox');
 const refreshBtn = document.getElementById('refreshBtn');
 const clearBtn = document.getElementById('clearBtn');
-
 const addBookingBtn = document.getElementById('addBookingBtn');
 const bookingModal = document.getElementById('bookingModal');
 const closeModalBtn = document.getElementById('closeModalBtn');
@@ -283,13 +280,37 @@ const m_slots = document.getElementById('m_slots');
 const m_time = document.getElementById('m_time');
 const m_notes = document.getElementById('m_notes');
 const m_submitBtn = document.getElementById('m_submitBtn');
+const viewingDateEl = document.getElementById('viewingDate');
+const prevDayBtn = document.getElementById('prevDay');
+const nextDayBtn = document.getElementById('nextDay');
+const dayIndexLabel = document.getElementById('dayIndexLabel');
 
-/* ================= helpers ================= */
+/* ================= state ================= */
+let selectedDate = new Date(); // current viewed date (Date object)
+let clearedForDate = {}; // map dateStr => Set of booking ids hidden on dashboard
+// persisted in localStorage under key 'sf_dashboard_cleared'
+(function loadCleared() {
+  try {
+    const v = JSON.parse(localStorage.getItem('sf_dashboard_cleared') || '{}');
+    Object.keys(v).forEach(k => clearedForDate[k] = new Set(v[k]));
+  } catch(e){ clearedForDate = {}; }
+})();
+
+/* ========== utilities ========== */
 function formatDateISO(d){ return d.toISOString().split('T')[0]; }
+function formatDisplayDate(d){
+  // e.g. 2025-10-15 -> 15/10/2025
+  const dt = new Date(d);
+  return `${String(dt.getDate()).padStart(2,'0')}/${String(dt.getMonth()+1).padStart(2,'0')}/${dt.getFullYear()}`;
+}
+function persistCleared() {
+  const out = {};
+  Object.keys(clearedForDate).forEach(k => out[k] = Array.from(clearedForDate[k]));
+  localStorage.setItem('sf_dashboard_cleared', JSON.stringify(out));
+}
 
+/* 40-minute slot generator (same logic used in booking form) */
 function generate40MinSlotsForDay(dayIndex){
-  // dayIndex provided for hours selection if you want different hours per day
-  // Use same hours logic as booking: Sunday (0) 9-18, Saturday(6) 9-19 else 9-20
   const open = 9;
   const close = (dayIndex === 0) ? 18 : (dayIndex === 6) ? 19 : 20;
   const out = [];
@@ -299,10 +320,8 @@ function generate40MinSlotsForDay(dayIndex){
     out.push(t);
     m += 40;
     if (m >= 60) { m -= 60; h += 1; }
-    // stop once next slot would be >= close with leftover minutes
     if (h > close) break;
   }
-  // ensure last slot doesn't exceed close time
   return out.filter(t=>{
     const [hh,mm]=t.split(':').map(Number);
     const minutes = hh*60+mm;
@@ -311,45 +330,51 @@ function generate40MinSlotsForDay(dayIndex){
   });
 }
 
-/* ================ Load and render bookings (today + next 5 days) ================ */
+/* ================= load bookings for selectedDate ================= */
 async function loadBookings(){
+  // show only for selectedDate
+  const dateStr = formatDateISO(selectedDate);
+  viewingDateEl.textContent = `${formatDisplayDate(selectedDate)} ( ${dateStr} )`; // visible label
+  dayIndexLabel.textContent = `${formatDisplayDate(selectedDate)}`;
+
   loading.style.display = 'block';
   noData.style.display = 'none';
   tableContainer.style.display = 'none';
+  tableBody.innerHTML = '';
 
-  const today = new Date();
-  const future = new Date();
-  future.setDate(today.getDate() + 5);
-
-  const t = formatDateISO(today);
-  const f = formatDateISO(future);
-
+  // fetch bookings where booking_date == dateStr
   const { data, error } = await sb
     .from('bookings')
     .select('*')
-    .gte('booking_date', t)
-    .lte('booking_date', f)
-    .order('booking_date', { ascending: true })
+    .eq('booking_date', dateStr)
     .order('booking_time', { ascending: true });
 
   loading.style.display = 'none';
   if (error) { console.error('loadBookings error', error); noData.style.display = 'block'; return; }
-  if (!data || data.length === 0) { noData.style.display = 'block'; return; }
+  if (!data || data.length === 0) { noData.style.display = 'block'; updateStats([], dateStr); return; }
 
-  tableContainer.style.display = 'block';
-  renderTable(data);
-  updateStats(data, t);
+  // apply cleared filter (hide ids in clearedForDate[dateStr])
+  const clearedSet = clearedForDate[dateStr] || new Set();
+  const visible = data.filter(b => !clearedSet.has(String(b.id)));
+
+  tableContainer.style.display = visible.length ? 'block' : 'none';
+  if (!visible.length) noData.style.display = 'block';
+
+  renderTable(visible);
+  updateStats(data, dateStr); // pass full data for stats (counts & revenue)
 }
 
+/* render visible rows */
 function renderTable(data){
   tableBody.innerHTML = '';
   data.forEach(b => {
     const tr = document.createElement('tr');
 
-    // Actions column: Cancel button (only if confirmed)
     const cancelBtnHTML = (b.status === 'confirmed')
       ? `<button data-id="${b.id}" class="btn-cancel small" style="background:#e74c3c;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-weight:700;">✖ Cancel</button>`
-      : '';
+      : `<button data-id="${b.id}" class="btn-cancel small" style="background:#555;color:#fff;border:none;padding:6px 10px;border-radius:6px;cursor:pointer;font-weight:700;">↺ Mark</button>`;
+
+    const statusClass = (b.status === 'confirmed') ? 'badge-confirmed' : (b.status === 'cancelled') ? 'badge-cancelled' : 'badge-finished';
 
     tr.innerHTML = `
       <td>${escapeHtml(b.customer_name||'')}</td>
@@ -360,51 +385,101 @@ function renderTable(data){
       <td>${escapeHtml(b.barber||'')}</td>
       <td>${escapeHtml(b.service||'')}</td>
       <td>£${b.price||''}</td>
-      <td><span class="badge ${b.status==='confirmed'?'badge-confirmed':'badge-cancelled'}">${b.status}</span></td>
-      <td>${cancelBtnHTML}</td>
+      <td><span class="badge ${statusClass}">${b.status}</span></td>
+      <td>${cancelBtnHTML} <button data-hide-id="${b.id}" style="margin-left:6px;background:#333;color:#FFD700;border:1px solid #444;padding:6px 8px;border-radius:6px;cursor:pointer">Hide</button></td>
     `;
     tableBody.appendChild(tr);
   });
 
-  // Wire up cancel buttons
+    // wire cancel buttons (update status to 'cancelled') and hide buttons
   tableBody.querySelectorAll('button[data-id]').forEach(btn=>{
-    btn.addEventListener('click', async (e)=>{
+    btn.addEventListener('click', async ()=>{
       const id = btn.getAttribute('data-id');
-      if(!confirm('Cancel this booking?')) return;
+      if(!confirm('Set this booking to "cancelled"?')) return;
       btn.disabled = true;
       const { error } = await sb.from('bookings').update({ status: 'cancelled' }).eq('id', id);
       if(error){ alert('Cancel failed'); console.error(error); btn.disabled=false; return; }
       loadBookings();
     });
   });
+
+  tableBody.querySelectorAll('button[data-hide-id]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.getAttribute('data-hide-id');
+      const dateStr = formatDateISO(selectedDate);
+      clearedForDate[dateStr] = clearedForDate[dateStr] || new Set();
+      clearedForDate[dateStr].add(String(id));
+      persistCleared();
+      // remove row from DOM
+      btn.closest('tr').remove();
+      // if none left, show noData
+      if (!tableBody.querySelectorAll('tr').length) { tableContainer.style.display='none'; noData.style.display='block'; }
+      updateStatsFromDashboard();
+    });
+  });
 }
 
-function updateStats(data, todayStr){
-  const todayBookings = data.filter(b => b.booking_date === todayStr);
-  const confirmed = data.filter(b => b.status === 'confirmed');
+/* update stats using full dataset (so counts & revenue are accurate) */
+function updateStats(fullData, todayStr){
+  // fullData may include hidden (cleared) rows; show counts for that date
+  const todayBookings = fullData.filter(b => b.booking_date === todayStr);
+  const confirmed = todayBookings.filter(b => b.status === 'confirmed');
   const totalRevenue = confirmed.reduce((sum,b) => sum + (parseFloat(b.price) || 0), 0);
   todayCountEl.textContent = todayBookings.length;
-  totalCountEl.textContent = data.length;
+  totalCountEl.textContent = todayBookings.length;
   revenueEl.textContent = `£${totalRevenue.toFixed(2)}`;
 }
+/* update stats based on what's currently visible on dashboard (after hide) */
+function updateStatsFromDashboard(){
+  const rows = tableBody.querySelectorAll('tr');
+  const count = rows.length;
+  let revenueSum = 0;
+  rows.forEach(r=>{
+    const priceCell = r.children[7]?.textContent?.replace('£','') || '0';
+    revenueSum += parseFloat(priceCell) || 0;
+  });
+  todayCountEl.textContent = count;
+  totalCountEl.textContent = count;
+  revenueEl.textContent = `£${revenueSum.toFixed(2)}`;
+}
 
-/* ==================== Search / Refresh / Clear ==================== */
+/* ================= Search / Refresh / Clear ==================== */
 searchBox.addEventListener('input', ()=>{
   const q = searchBox.value.toLowerCase();
   tableBody.querySelectorAll('tr').forEach(r=>{
     r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none';
   });
 });
-refreshBtn.addEventListener('click', loadBookings);
-clearBtn.addEventListener('click', async ()=>{
-  if(!confirm('Clear ALL bookings? This cannot be undone.')) return;
-  const { error } = await sb.from('bookings').delete().neq('id', 0);
-  if(error){ alert('Failed to clear bookings'); console.error(error); return; }
-  loadBookings();
+
+refreshBtn.addEventListener('click', async ()=>{
+  // refresh should remove cleared hides for this date and re-fetch from supabase
+  const dateStr = formatDateISO(selectedDate);
+  if(clearedForDate[dateStr]) delete clearedForDate[dateStr];
+  persistCleared();
+  await loadBookings();
 });
 
-/* ==================== Modal: populate barbers & services (exact) ==================== */
-// Populate barber dropdown in modal (same order & names)
+clearBtn.addEventListener('click', ()=>{
+  // Clear (hide) all visible rows for this date on dashboard only (store ids)
+  if(!confirm('Hide all currently visible bookings for this date on the dashboard? You can restore them with Refresh.')) return;
+  const dateStr = formatDateISO(selectedDate);
+  clearedForDate[dateStr] = clearedForDate[dateStr] || new Set();
+  tableBody.querySelectorAll('tr').forEach(r=>{
+    const hideBtn = r.querySelector('button[data-hide-id]');
+    if(hideBtn){
+      clearedForDate[dateStr].add(String(hideBtn.getAttribute('data-hide-id')));
+    }
+  });
+  persistCleared();
+  // remove rows
+  tableBody.innerHTML = '';
+  tableContainer.style.display='none';
+  noData.style.display='block';
+  updateStatsFromDashboard();
+});
+
+
+/* ================= Modal populators & slot logic (same as booking form) ================= */
 function populateModalBarbers(){
   m_barber.innerHTML = '<option value="">-- choose master barber --</option>';
   BARBERS.forEach(b => {
@@ -412,8 +487,6 @@ function populateModalBarbers(){
     m_barber.appendChild(o);
   });
 }
-
-// Populate services in modal to match booking.html exactly
 function populateModalServices(){
   m_service.innerHTML = '';
   servicesData.forEach(cat=>{
@@ -427,10 +500,7 @@ function populateModalServices(){
     m_service.appendChild(og);
   });
 }
-
-/* ============ Modal slots and barber grey-out logic (same rules) ============ */
 m_date.min = new Date().toISOString().split('T')[0];
-
 function updateModalBarbersForDate(dateStr){
   if(!dateStr) return;
   const day = new Date(dateStr).getDay();
@@ -441,7 +511,6 @@ function updateModalBarbersForDate(dateStr){
     opt.style.opacity = works ? 1 : 0.4;
   });
 }
-
 async function renderModalSlots(){
   m_time.value = '';
   m_slots.innerHTML = '';
@@ -455,7 +524,7 @@ async function renderModalSlots(){
   if(!works){ m_slots.innerHTML = '<div class="muted">This barber does not work on that day.</div>'; return; }
 
   const all = generate40MinSlotsForDay(day);
-  const { data: booked, error } = await sb.from('bookings').select('booking_time').eq('booking_date', dateVal).eq('barber', barberVal).eq('status','confirmed');
+  const { data: booked } = await sb.from('bookings').select('booking_time').eq('booking_date', dateVal).eq('barber', barberVal).eq('status','confirmed');
   const taken = booked ? booked.map(x => x.booking_time) : [];
 
   all.forEach(t=>{
@@ -472,10 +541,9 @@ async function renderModalSlots(){
   });
 }
 
-/* ================= Manual booking submit (modal) - uses same endpoint/table ================= */
+/* ================= Modal submit (same endpoint/table and webhook) ================= */
 modalForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
-
   const svc = m_service.value ? JSON.parse(m_service.value) : null;
   const payload = {
     customer_name: m_name.value.trim(),
@@ -490,9 +558,8 @@ modalForm.addEventListener('submit', async (e)=>{
     status: 'confirmed'
   };
 
-  // validation
   if(!payload.customer_name || !payload.customer_email || !payload.customer_phone || !payload.barber || !payload.service || !payload.booking_date || !payload.booking_time){
-    m_submitBtn.textContent = 'Fill all fields'; setTimeout(()=>m_submitBtn.innerHTML = '<i class="fas fa-calendar-check"></i> Book appointment', 2000); return;
+    m_submitBtn.textContent = 'Fill all fields'; setTimeout(()=>m_submitBtn.innerHTML = 'Book appointment', 2000); return;
   }
 
   m_submitBtn.disabled = true; m_submitBtn.textContent = 'Booking...';
@@ -501,42 +568,37 @@ modalForm.addEventListener('submit', async (e)=>{
   const { data: clash } = await sb.from('bookings').select('id').eq('booking_date', payload.booking_date).eq('booking_time', payload.booking_time).eq('barber', payload.barber).eq('status','confirmed').limit(1);
   if(clash && clash.length){
     m_submitBtn.textContent = 'Slot Unavailable';
-    setTimeout(()=>{ m_submitBtn.innerHTML = '<i class="fas fa-calendar-check"></i> Book appointment'; m_submitBtn.disabled=false; }, 2000);
+    setTimeout(()=>{ m_submitBtn.innerHTML = 'Book appointment'; m_submitBtn.disabled=false; }, 2000);
     return;
   }
 
-  // insert
   const { error } = await sb.from('bookings').insert([payload]);
   if(error){ console.error('insert error', error); m_submitBtn.textContent = 'Error — try again'; m_submitBtn.disabled=false; return; }
 
-  // trigger Apps Script webhook to send emails (Apps Script will brand and send emails)
-  try {
-    // mode no-cors so response won't be visible; webhook must handle sending
-    fetch(EMAIL_WEBHOOK, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-  } catch(e){ console.warn('email webhook fetch failed (no-cors)', e); }
+  // trigger Apps Script webhook (no-cors)
+  try { fetch(EMAIL_WEBHOOK, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }); } catch(e){ console.warn('email webhook fetch failed', e); }
 
-  // close modal, refresh table
   m_submitBtn.textContent = 'Booking Confirmed ✓';
   setTimeout(()=> {
     m_submitBtn.disabled = false;
-    m_submitBtn.innerHTML = '<i class="fas fa-calendar-check"></i> Book appointment';
+    m_submitBtn.innerHTML = 'Book appointment';
     bookingModal.classList.remove('active');
     modalForm.reset();
     m_slots.innerHTML = '<div class="muted">Select service, date and master barber to load slots</div>';
-    loadBookings();
+    // reload for the date if it matches selectedDate
+    if(formatDateISO(new Date(payload.booking_date)) === formatDateISO(selectedDate)) loadBookings();
   }, 800);
 });
-/* ================= Modal open/close and wiring inputs ================= */
+
+/* ================= Modal open/close wiring ================= */
 addBookingBtn.addEventListener('click', ()=>{
   bookingModal.classList.add('active');
   populateModalServices();
   populateModalBarbers();
   m_date.min = new Date().toISOString().split('T')[0];
-  // clear previous selection
   modalForm.reset();
   m_slots.innerHTML = '<div class="muted">Select service, date and master barber to load slots</div>';
 });
-
 closeModalBtn.addEventListener('click', ()=> bookingModal.classList.remove('active'));
 window.addEventListener('click', (ev)=>{ if(ev.target === bookingModal) bookingModal.classList.remove('active'); });
 
@@ -546,8 +608,17 @@ m_date.addEventListener('change', ()=>{
 });
 m_barber.addEventListener('change', renderModalSlots);
 m_service.addEventListener('change', renderModalSlots);
+/* ================= Paging: prev/next day ================= */
+prevDayBtn.addEventListener('click', ()=>{
+  selectedDate.setDate(selectedDate.getDate() - 1);
+  loadBookings();
+});
+nextDayBtn.addEventListener('click', ()=>{
+  selectedDate.setDate(selectedDate.getDate() + 1);
+  loadBookings();
+});
 
-/* ================= Real-time subscription to refresh automatically ================= */
+/* ================= Real-time subscription (keeps it if you want auto-updates) ================= */
 try {
   sb.channel('bookings-changes')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => loadBookings())
@@ -557,8 +628,12 @@ try {
 /* ================= Utilities ================= */
 function escapeHtml(s){ if(!s) return ''; return String(s).replace(/[&<>"']/g, (m)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
-/* ================= Init load ================= */
-loadBookings();
+/* ================= Init ================= */
+(function init(){
+  // default to today
+  selectedDate = new Date();
+  loadBookings();
+})();
 </script>
 </body>
 </html>
