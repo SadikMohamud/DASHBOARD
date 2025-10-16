@@ -215,12 +215,14 @@ const EMAIL_WEBHOOK = 'https://script.google.com/macros/s/AKfycbzhZNRIOPimun3NF-
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 /* ================= BARBERS + SERVICES (front-end driven) ================= */
-const BARBERS = ['Alex','Moh','Yass','Ali'];
+const BARBERS = ['Alex','Moh','Yass','Ali','Any Master Barber'];
+
 const BARBER_SCHEDULE = {
   'Alex':[0,1,2,3,4,5,6],
   'Moh':[1,2],
   'Yass':[3,4,5,6],
-  'Ali':[5,6,0]
+  'Ali':[5,6,0],
+  'Any Master Barber':[0,1,2,3,4,5,6] // works every day
 };
 
 const servicesData = [
